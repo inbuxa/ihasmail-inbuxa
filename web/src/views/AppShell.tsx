@@ -4,6 +4,7 @@ import { BookOpen, Calendar, ChevronsUpDown, FolderOpen, Globe, HelpCircle, LogO
 import { useSession } from "@/store/session";
 import { withBase } from "@/lib/basePath";
 import { DEFAULT_APP_NAME } from "@/lib/brand";
+import { InbuxaWordmark } from "@/ui/InbuxaWordmark";
 import { useEffectiveTheme, useSettings } from "@/store/settings";
 import { toggleTarget } from "@/lib/palette";
 import { useMail } from "@/store/mail";
@@ -147,14 +148,18 @@ export function AppShell({ children }: { children: ReactNode }) {
           <MenuIcon size={22} />
         </button>
         <Link href="/mail" className="brand">
-          <img src={withBase("/img/logo.png")} alt="" />
+          <img src={withBase(appName === DEFAULT_APP_NAME ? "/img/inbuxa-mark.png" : "/img/logo.png")} alt="" />
           {/* A product name, not a word: translated it is a different product.
               Read from the session rather than written here, so a deployment
               that set APP_NAME is called what it calls itself -- the document
               title has taken it from there all along. */}
-          <span className="brand-name notranslate" translate="no">
-            {appName}
-          </span>
+          {appName === DEFAULT_APP_NAME ? (
+            <InbuxaWordmark className="brand-name" height={22} />
+          ) : (
+            <span className="brand-name notranslate" translate="no">
+              {appName}
+            </span>
+          )}
         </Link>
         <SearchBar />
         <div className="topbar-actions">

@@ -7,6 +7,7 @@ import { DEFAULT_SOURCE_URL } from "@/lib/source";
 import { APP_VERSION } from "@/lib/version";
 import { DEFAULT_APP_NAME } from "@/lib/brand";
 import { t } from "@/lib/i18n";
+import { InbuxaWordmark } from "@/ui/InbuxaWordmark";
 
 export function LoginPage() {
   const login = useSession((s) => s.login);
@@ -92,10 +93,12 @@ export function LoginPage() {
     <div className="login-page">
       <form className="login-card" onSubmit={submit}>
         <div className="logo">
-          <img src={withBase("/img/logo.png")} alt="" width={120} height={143} />
+          <img src={withBase(appName === DEFAULT_APP_NAME ? "/img/inbuxa-mark.png" : "/img/logo.png")} alt="" width={120} height={143} />
           {/* A product name, not a word: not translated, and not guessed at
-              from the page it is on. */}
-          <h1 className="notranslate" translate="no">{appName}</h1>
+              from the page it is on. INBUXA's is its wordmark. */}
+          <h1 className="notranslate" translate="no">
+            {appName === DEFAULT_APP_NAME ? <InbuxaWordmark height={34} /> : appName}
+          </h1>
           <p className="tagline">{t("Fast, friendly webmail. Your mailbox, your way.")}</p>
         </div>
         {error && (

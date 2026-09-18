@@ -4,6 +4,7 @@ import { DEFAULT_SOURCE_URL } from "@/lib/source";
 import { APP_VERSION } from "@/lib/version";
 import { withBase } from "@/lib/basePath";
 import { t, tNode } from "@/lib/i18n";
+import { InbuxaWordmark } from "@/ui/InbuxaWordmark";
 
 export function AboutSettings() {
   const session = useSession((s) => s.session);
@@ -12,13 +13,16 @@ export function AboutSettings() {
   const sourceUrl = session?.ihasmail?.sourceUrl ?? DEFAULT_SOURCE_URL;
   return (
     <div>
-      <h1>{t("About ihasmail")}</h1>
-      <p className="lead">{tNode("A fast, friendly, open-source webmail for {server}, built on JMAP.", { server: <a href="https://stalw.art" target="_blank" rel="noreferrer">{t("Stalwart Mail Server")}</a> })}</p>
+      {/* ihasmail-inbuxa: INBUXA's webmail, built on ihasmail, whose version
+          and source stay here as its credit and the AGPL's offer. */}
+      <h1>{t("About INBUXA webmail")}</h1>
+      <p className="lead">{tNode("A fast, friendly, open-source webmail for {server}, built on JMAP.", { server: <span className="notranslate" translate="no">INBUXA</span> })}</p>
       <div className="row" style={{ gap: 16, alignItems: "center", marginBottom: 16 }}>
-        <img src={withBase("/img/logo.png")} alt={t("ihasmail")} width={96} />
+        <img src={withBase("/img/inbuxa-mark.png")} alt="" width={80} />
         <div>
+          <InbuxaWordmark height={26} />
           {/* A product name and a version string: neither is a word to translate. */}
-          <div style={{ fontWeight: 700, fontSize: "1.2em" }} className="notranslate" translate="no">ihasmail v{APP_VERSION}</div>
+          <div style={{ fontWeight: 700 }} className="notranslate" translate="no">ihasmail v{APP_VERSION}</div>
           <div className="hint">{tNode("AGPL-3.0-or-later · {source}", { source: <a href={sourceUrl} target="_blank" rel="noreferrer">{sourceUrl.replace(/^https?:\/\//, "")}</a> })}</div>
         </div>
       </div>
@@ -26,7 +30,7 @@ export function AboutSettings() {
       <table className="sessions-table">
         <tbody>
           <tr><td>{t("Signed in as")}</td><td>{session?.username}</td></tr>
-          <tr><td>{t("Stalwart")}</td><td>{describeServer(session?.ihasmail?.server)}</td></tr>
+          <tr><td>{t("Mail server")}</td><td className="notranslate" translate="no">INBUXA</td></tr>
           <tr><td>{t("Accounts")}</td><td>{Object.values(session?.accounts ?? {}).map((a) => a.name).join(", ")}</td></tr>
           <tr><td>{t("Max upload")}</td><td>{t("{size} MB", { size: Math.round(client.maxSizeUpload / 1048576) })}</td></tr>
           <tr><td>{t("Image privacy proxy")}</td><td>{session?.ihasmail?.imageProxy ? t("enabled") : t("disabled")}</td></tr>
@@ -40,15 +44,4 @@ export function AboutSettings() {
       </div>
     </div>
   );
-}
-
-/**
- * Stalwart deliberately withholds its version from clients (it reports a fixed
- * "1.0.0" wherever it publishes one at all), so the edition is all there is to
- * show. The generation used to be reported here too, back when ihasmail spoke
- * to both 0.15 and 0.16; it requires 0.16 now, so signing in at all is the
- * answer to that question.
- */
-function describeServer(server: { edition?: string | null } | undefined): string {
-  return server?.edition ? `0.16 or newer (${server.edition})` : "0.16 or newer";
 }

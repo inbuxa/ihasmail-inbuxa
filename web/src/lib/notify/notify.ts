@@ -1,6 +1,6 @@
 import { withBase } from "../basePath";
 
-let baseTitle = "ihasmail";
+let baseTitle = "INBUXA";
 let faviconCanvas: HTMLCanvasElement | null = null;
 let baseFavicon: HTMLImageElement | null = null;
 

@@ -20,10 +20,21 @@ keep up. Nothing here is pushed there.
   no address: only whether this is the person's own device, then the server's
   page takes it from there. With several servers, the address comes first,
   since its domain picks the server.
+- **Branded INBUXA.** INBUXA is a product suite, and its webmail carries the
+  INBUXA name, mark and wordmark, so it can't be taken for public ihasmail,
+  which stays an independent product. The default `APP_NAME` is `INBUXA`; the
+  sign-in page, header, page title, installed-app name and About page say
+  INBUXA. ihasmail's version and AGPL source line stay as its credit. Set
+  `APP_NAME` to something else and that name shows as text, as in public
+  ihasmail.
 - **Tenants are offered on every server**, whatever edition it reports.
   `SHOW_ENTERPRISE_NOTICES` still adds the notice for an upstream Stalwart.
 
 ## Configuration
+
+**Before any deployment, set `SOURCE_URL`** to where this fork's source is
+published. The AGPL's offer has to point at the source of the code that's
+running, and the default still points at public ihasmail.
 
 Server sign-in is on when `OAUTH_CLIENT_SECRET` is set. Without it,
 ihasmail-inbuxa keeps public ihasmail's password form.

@@ -1213,6 +1213,8 @@ export const catalog: Catalog = {
     "Could not save filters: {error}": "Filters opslaan mislukt: {error}",
     "Could not send the receipt: {error}": "De leesbevestiging kon niet worden verzonden: {error}",
     "Could not sign in.": "Aanmelden mislukt.",
+    "About INBUXA webmail": "Over INBUXA webmail",
+    "Mail server": "Mailserver",
     "You'll enter your password on your mail server's sign-in page.": "U voert uw wachtwoord in op de aanmeldpagina van uw mailserver.",
     "You'll sign in on your mail server's own page.": "U meldt zich aan op de eigen pagina van uw mailserver.",
     "This sign-in didn't start in this browser. Try again.": "Deze aanmelding is niet in deze browser begonnen. Probeer het opnieuw.",

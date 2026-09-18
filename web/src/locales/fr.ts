@@ -1220,6 +1220,8 @@ export const catalog: Catalog = {
     "Could not save filters: {error}": "Impossible d’enregistrer les filtres : {error}",
     "Could not send the receipt: {error}": "Impossible d’envoyer l’accusé de lecture : {error}",
     "Could not sign in.": "Connexion impossible.",
+    "About INBUXA webmail": "À propos d’INBUXA webmail",
+    "Mail server": "Serveur de messagerie",
     "You'll enter your password on your mail server's sign-in page.": "Vous saisirez votre mot de passe sur la page de connexion de votre serveur de messagerie.",
     "You'll sign in on your mail server's own page.": "Vous vous connecterez sur la page de votre serveur de messagerie.",
     "This sign-in didn't start in this browser. Try again.": "Cette connexion n’a pas commencé dans ce navigateur. Réessayez.",

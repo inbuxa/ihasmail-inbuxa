@@ -1211,6 +1211,8 @@ export const catalog: Catalog = {
     "Could not save filters: {error}": "Не вдалося зберегти фільтри: {error}",
     "Could not send the receipt: {error}": "Не вдалося надіслати сповіщення про прочитання: {error}",
     "Could not sign in.": "Не вдалося увійти.",
+    "About INBUXA webmail": "Про вебпошту INBUXA",
+    "Mail server": "Поштовий сервер",
     "You'll enter your password on your mail server's sign-in page.": "Пароль вводиться на сторінці входу вашого поштового сервера.",
     "You'll sign in on your mail server's own page.": "Вхід виконується на сторінці вашого поштового сервера.",
     "This sign-in didn't start in this browser. Try again.": "Цей вхід розпочато не в цьому браузері. Спробуйте ще раз.",

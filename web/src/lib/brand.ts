@@ -10,4 +10,6 @@
  * One constant rather than the string written out at each of them, because
  * three copies of a default is how two of them end up stale.
  */
-export const DEFAULT_APP_NAME = "ihasmail";
+// ihasmail-inbuxa: INBUXA's webmail goes by INBUXA, so it can't be taken for
+// public ihasmail. APP_NAME still names a deployment whatever it likes.
+export const DEFAULT_APP_NAME = "INBUXA";
