@@ -1243,6 +1243,7 @@ export const catalog: Catalog = {
     "Could not send the receipt: {error}": "Die Lesebestätigung konnte nicht gesendet werden: {error}",
     "Could not sign in.": "Anmeldung fehlgeschlagen.",
     "You'll enter your password on your mail server's sign-in page.": "Ihr Passwort geben Sie auf der Anmeldeseite Ihres Mailservers ein.",
+    "You'll sign in on your mail server's own page.": "Sie melden sich auf der eigenen Seite Ihres Mailservers an.",
     "This sign-in didn't start in this browser. Try again.": "Diese Anmeldung wurde nicht in diesem Browser begonnen. Bitte versuchen Sie es erneut.",
     "The sign-in took too long. Try again.": "Die Anmeldung hat zu lange gedauert. Bitte versuchen Sie es erneut.",
     "Sign-in was cancelled.": "Die Anmeldung wurde abgebrochen.",

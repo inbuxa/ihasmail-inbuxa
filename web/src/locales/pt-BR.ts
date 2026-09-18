@@ -1219,6 +1219,7 @@ export const catalog: Catalog = {
     "Could not send the receipt: {error}": "Não foi possível enviar a confirmação de leitura: {error}",
     "Could not sign in.": "Não foi possível entrar.",
     "You'll enter your password on your mail server's sign-in page.": "Você vai digitar sua senha na página de entrada do seu servidor de e-mail.",
+    "You'll sign in on your mail server's own page.": "Você vai entrar na própria página do seu servidor de e-mail.",
     "This sign-in didn't start in this browser. Try again.": "Esta entrada não começou neste navegador. Tente de novo.",
     "The sign-in took too long. Try again.": "A entrada demorou demais. Tente de novo.",
     "Sign-in was cancelled.": "A entrada foi cancelada.",

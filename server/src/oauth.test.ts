@@ -84,6 +84,18 @@ after(() => {
 test("the configuration tells the web app to use the server's page", async () => {
   const body = await jsonOf(await call("/api/config"));
   assert.equal(body.signIn, "oauth");
+  assert.equal(body.signInDirect, true, "one mail server: its page asks for the username, not ihasmail");
+});
+
+test("with one mail server, sign-in starts without an address", async () => {
+  const res = await call("/api/auth/oauth/start");
+  assert.equal(res.status, 302);
+  const to = new URL(res.headers.get("location")!);
+  assert.equal(to.searchParams.has("login_hint"), false);
+  const approved = await fetch(to, { redirect: "manual" });
+  const back = new URL(approved.headers.get("location")!);
+  assert.equal((await call(`/api/auth/callback${back.search}`)).headers.get("location"), "/");
+  assert.equal((await call("/api/auth/session")).status, 200);
 });
 
 test("the password form is refused: ihasmail never sees a password", async () => {

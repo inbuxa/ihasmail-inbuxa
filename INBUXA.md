@@ -15,7 +15,11 @@ keep up. Nothing here is pushed there.
   handles a password to sign someone in. Two-factor codes are asked for on
   that page. Sessions hold sealed tokens and renew them before they expire. A
   password change revokes the tokens, so it signs the person out everywhere,
-  this session included.
+  this session included. With one mail server (no `STALWART_SERVERS_FILE`,
+  or one whose domains all map to `STALWART_URL`), the sign-in page asks for
+  no address: only whether this is the person's own device, then the server's
+  page takes it from there. With several servers, the address comes first,
+  since its domain picks the server.
 - **Tenants are offered on every server**, whatever edition it reports.
   `SHOW_ENTERPRISE_NOTICES` still adds the notice for an upstream Stalwart.
 

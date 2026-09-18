@@ -1223,6 +1223,7 @@ export const catalog: Catalog = {
     "Could not send the receipt: {error}": "无法发送已读回执：{error}",
     "Could not sign in.": "无法登录。",
     "You'll enter your password on your mail server's sign-in page.": "您将在邮件服务器的登录页面上输入密码。",
+    "You'll sign in on your mail server's own page.": "您将在邮件服务器自己的页面上登录。",
     "This sign-in didn't start in this browser. Try again.": "此次登录不是在这个浏览器中发起的。请重试。",
     "The sign-in took too long. Try again.": "登录耗时过长。请重试。",
     "Sign-in was cancelled.": "登录已取消。",

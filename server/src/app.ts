@@ -41,7 +41,7 @@ import {
   revokeAppPassword,
 } from "./account.js";
 import { imageProxyHandler } from "./imageproxy.js";
-import { SignInError, finish as finishSignIn, needsRefresh, oauthEnabled, refreshTokens, start as startSignIn, type TokenSet } from "./oauth.js";
+import { SignInError, finish as finishSignIn, needsRefresh, oauthEnabled, refreshTokens, singleServer, start as startSignIn, type TokenSet } from "./oauth.js";
 import { icsProxyHandler } from "./icsproxy.js";
 import { staticHandler } from "./static.js";
 
@@ -384,6 +384,9 @@ export function createApp(basePath = config.basePath): Hono<Env> {
       settingsPolicy: config.settingsPolicy,
       /* "oauth": sign in on the mail server's own page (see oauth.ts). */
       signIn: oauthEnabled() ? "oauth" : "password",
+      /* With "oauth": true when the server's page can take it from here, so
+         the sign-in form doesn't ask for an address first. */
+      signInDirect: oauthEnabled() && singleServer(),
     }),
   );
 

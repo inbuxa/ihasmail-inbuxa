@@ -52,6 +52,16 @@ export function oauthEnabled(): boolean {
   return Boolean(config.oauthClientSecret);
 }
 
+/**
+ * Whether every account is on the same server. Then sign-in needs no address
+ * first: the server's page asks for the username itself. With several servers
+ * (STALWART_SERVERS_FILE), the domain picks the server, so the address comes
+ * first.
+ */
+export function singleServer(): boolean {
+  return Object.values(config.stalwartServers).every((url) => url === config.stalwartUrl);
+}
+
 /** The one redirect URI registered for this client on the server. */
 export function redirectUri(): string {
   return `${config.publicUrl}${config.basePath}/api/auth/callback`;

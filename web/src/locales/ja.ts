@@ -1224,6 +1224,7 @@ export const catalog: Catalog = {
     "Could not send the receipt: {error}": "開封確認を送信できませんでした: {error}",
     "Could not sign in.": "サインインできませんでした。",
     "You'll enter your password on your mail server's sign-in page.": "パスワードはメールサーバーのサインインページで入力します。",
+    "You'll sign in on your mail server's own page.": "メールサーバー自身のページでサインインします。",
     "This sign-in didn't start in this browser. Try again.": "このサインインはこのブラウザーで開始されたものではありません。もう一度お試しください。",
     "The sign-in took too long. Try again.": "サインインに時間がかかりすぎました。もう一度お試しください。",
     "Sign-in was cancelled.": "サインインはキャンセルされました。",

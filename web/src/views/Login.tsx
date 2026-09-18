@@ -33,6 +33,8 @@ export function LoginPage() {
    * and the password form if it never does.
    */
   const [signIn, setSignIn] = useState<"oauth" | "password" | null>(null);
+  /* With "oauth" and one mail server, its page asks for the username: no address here. */
+  const [direct, setDirect] = useState(false);
   useEffect(() => {
     let live = true;
     fetch(withBase("/api/config"))
@@ -42,6 +44,7 @@ export function LoginPage() {
         if (c.sourceUrl) setSourceUrl(c.sourceUrl as string);
         if (typeof c.appName === "string" && c.appName.trim()) setAppName(c.appName.trim());
         setSignIn(c.signIn === "oauth" ? "oauth" : "password");
+        setDirect(c.signIn === "oauth" && c.signInDirect === true);
       })
       .catch(() => { /* the default stands */ })
       .finally(() => { if (live) setSignIn((m) => m ?? "password"); });
@@ -58,10 +61,10 @@ export function LoginPage() {
     e.preventDefault();
     if (signIn === "oauth") {
       // Off to the mail server's page, which asks for the password there.
-      if (!username.trim()) return;
+      if (!direct && !username.trim()) return;
       setBusy(true);
-      if (trustDevice) localStorage.setItem("ihasmail:lastUser", username.trim());
-      const params = new URLSearchParams({ username: username.trim(), ...(trustDevice ? { remember: "1" } : {}) });
+      if (trustDevice && !direct) localStorage.setItem("ihasmail:lastUser", username.trim());
+      const params = new URLSearchParams({ ...(direct ? {} : { username: username.trim() }), ...(trustDevice ? { remember: "1" } : {}) });
       window.location.assign(withBase(`/api/auth/oauth/start?${params}`));
       return;
     }
@@ -100,12 +103,18 @@ export function LoginPage() {
             {error}
           </div>
         )}
+        {!direct && (
         <div className="field">
           <label htmlFor="u">{t("Email or username")}</label>
           <input id="u" className="input" type="text" autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={username} onChange={(e) => setUsername(e.target.value)} autoFocus={!username} required />
         </div>
+        )}
         {signIn === "oauth" ? (
-          <p className="hint" style={{ marginBottom: 12 }}>{t("You'll enter your password on your mail server's sign-in page.")}</p>
+          <p className="hint" style={{ marginBottom: 12 }}>
+            {direct
+              ? t("You'll sign in on your mail server's own page.")
+              : t("You'll enter your password on your mail server's sign-in page.")}
+          </p>
         ) : (
         <div className="field">
           <label htmlFor="p">{t("Password")}</label>
