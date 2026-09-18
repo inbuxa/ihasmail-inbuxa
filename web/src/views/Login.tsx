@@ -27,6 +27,12 @@ export function LoginPage() {
    * sign-in form with no name on it would be worse than a wrong one.
    */
   const [appName, setAppName] = useState(DEFAULT_APP_NAME);
+  /*
+   * How this installation signs people in: on the mail server's own page
+   * ("oauth"), or with the password form. Unknown until the config arrives,
+   * and the password form if it never does.
+   */
+  const [signIn, setSignIn] = useState<"oauth" | "password" | null>(null);
   useEffect(() => {
     let live = true;
     fetch(withBase("/api/config"))
@@ -35,8 +41,10 @@ export function LoginPage() {
         if (!live || !c) return;
         if (c.sourceUrl) setSourceUrl(c.sourceUrl as string);
         if (typeof c.appName === "string" && c.appName.trim()) setAppName(c.appName.trim());
+        setSignIn(c.signIn === "oauth" ? "oauth" : "password");
       })
-      .catch(() => { /* the default stands */ });
+      .catch(() => { /* the default stands */ })
+      .finally(() => { if (live) setSignIn((m) => m ?? "password"); });
     return () => { live = false; };
   }, []);
   const [username, setUsername] = useState(() => localStorage.getItem("ihasmail:lastUser") ?? "");
@@ -44,10 +52,19 @@ export function LoginPage() {
   const [showPw, setShowPw] = useState(false);
   const [trustDevice, setTrustDevice] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() => takeSignInNotice());
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    if (signIn === "oauth") {
+      // Off to the mail server's page, which asks for the password there.
+      if (!username.trim()) return;
+      setBusy(true);
+      if (trustDevice) localStorage.setItem("ihasmail:lastUser", username.trim());
+      const params = new URLSearchParams({ username: username.trim(), ...(trustDevice ? { remember: "1" } : {}) });
+      window.location.assign(withBase(`/api/auth/oauth/start?${params}`));
+      return;
+    }
     if (!username || !password) return;
     setBusy(true);
     setError(null);
@@ -87,6 +104,9 @@ export function LoginPage() {
           <label htmlFor="u">{t("Email or username")}</label>
           <input id="u" className="input" type="text" autoComplete="username" autoCapitalize="none" autoCorrect="off" spellCheck={false} value={username} onChange={(e) => setUsername(e.target.value)} autoFocus={!username} required />
         </div>
+        {signIn === "oauth" ? (
+          <p className="hint" style={{ marginBottom: 12 }}>{t("You'll enter your password on your mail server's sign-in page.")}</p>
+        ) : (
         <div className="field">
           <label htmlFor="p">{t("Password")}</label>
           <div className="pw-wrap">
@@ -96,6 +116,7 @@ export function LoginPage() {
             </button>
           </div>
         </div>
+        )}
         <label className="check" style={{ marginBottom: 4 }}>
           <input type="checkbox" checked={trustDevice} onChange={(e) => setTrustDevice(e.target.checked)} />
           <span>{t("This is my own device")}</span>
@@ -105,7 +126,7 @@ export function LoginPage() {
             ? "Stay signed in, and keep settings and recent addresses on this computer."
             : "Signed out after 5 minutes of inactivity, and nothing is kept on this computer. Leave this unticked on a shared or public one."}
         </p>
-        <button className="btn btn-primary btn-lg btn-block" type="submit" disabled={busy}>
+        <button className="btn btn-primary btn-lg btn-block" type="submit" disabled={busy || signIn === null}>
           {busy ? <span className="spinner" style={{ borderTopColor: "#fff" }} /> : <LogIn size={18} />}
           {busy ? "Signing in…" : "Sign in"}
         </button>
@@ -129,4 +150,42 @@ export function LoginPage() {
       </form>
     </div>
   );
+}
+
+/*
+ * Why the sign-in page is showing, when something sent it here: an error the
+ * mail server's page came back with (`?signin_error=`), or a notice left by a
+ * change that signed this session out. Read once, then removed, so a reload
+ * doesn't repeat it.
+ */
+const SIGNIN_ERROR_LABELS: Record<string, string> = {
+  state_mismatch: "This sign-in didn't start in this browser. Try again.",
+  expired: "The sign-in took too long. Try again.",
+  cancelled: "Sign-in was cancelled.",
+  exchange_failed: "The mail server didn't accept the sign-in. Try again.",
+  wrong_account: "That account is on a different mail server than the address you entered. Sign in with that address.",
+  unsupported_server: "This mail server isn't supported.",
+  unavailable: "Couldn't reach the mail server. Try again in a moment.",
+  rate_limited: "Too many attempts. Please wait a few minutes and try again.",
+  password_changed: "Your password was changed. Sign in with the new one.",
+  signed_out: "Your sign-in ended. Sign in again.",
+};
+
+export const SIGNIN_NOTICE_KEY = "ihasmail:signinNotice";
+
+function takeSignInNotice(): string | null {
+  let code: string | null = null;
+  try {
+    code = sessionStorage.getItem(SIGNIN_NOTICE_KEY);
+    sessionStorage.removeItem(SIGNIN_NOTICE_KEY);
+  } catch { /* storage may be unavailable */ }
+  const url = new URL(window.location.href);
+  const fromUrl = url.searchParams.get("signin_error");
+  if (fromUrl) {
+    code = fromUrl;
+    url.searchParams.delete("signin_error");
+    window.history.replaceState(null, "", url.toString());
+  }
+  if (!code) return null;
+  return t(SIGNIN_ERROR_LABELS[code] ?? "Could not sign in.");
 }

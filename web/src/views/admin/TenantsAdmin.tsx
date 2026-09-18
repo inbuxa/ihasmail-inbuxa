@@ -18,30 +18,14 @@ const PAGE_SIZE = 50;
  * Tenants: separate organizations on one server, each with its own people,
  * domains and limits.
  *
- * The section is offered to whoever may read tenants. On a server that does not
- * report Enterprise -- or reports no edition -- the page is only a notice that
- * tenants are an Enterprise feature: tenants there hold nobody to anything
- * beyond an ordinary user's permissions, so there is nothing worth creating or
- * listing. On Enterprise the notice is left out, unless the installation asks
- * for it (SHOW_ENTERPRISE_NOTICES), as the public demo does so as not to
- * suggest tenants come without the license.
+ * The section is offered to whoever may read tenants. INBUXA ships tenants to
+ * everybody, whatever edition the server reports, so there is no edition
+ * check here (public ihasmail shows only a notice unless the server reports
+ * Enterprise). SHOW_ENTERPRISE_NOTICES still adds the notice, for talking to
+ * upstream Stalwart.
  */
 export function TenantsAdmin({ selectedId }: { selectedId?: string }) {
-  const edition = useSession((s) => s.session?.ihasmail?.server?.edition ?? null);
   const notices = useSession((s) => s.session?.ihasmail?.server?.enterpriseNotices === true);
-  if (edition !== "enterprise") {
-    return (
-      <div>
-        <div className="admin-head">
-          <div className="grow">
-            <h1>{t("Tenants")}</h1>
-            <p className="lead">{t("Separate organizations on one server, each with its own people, domains and limits.")}</p>
-          </div>
-        </div>
-        <EnterpriseNotice warn />
-      </div>
-    );
-  }
   return <EnterpriseTenants selectedId={selectedId} notice={notices} />;
 }
 

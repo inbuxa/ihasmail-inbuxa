@@ -41,6 +41,7 @@ import {
   revokeAppPassword,
 } from "./account.js";
 import { imageProxyHandler } from "./imageproxy.js";
+import { SignInError, finish as finishSignIn, needsRefresh, oauthEnabled, refreshTokens, start as startSignIn, type TokenSet } from "./oauth.js";
 import { icsProxyHandler } from "./icsproxy.js";
 import { staticHandler } from "./static.js";
 
@@ -199,6 +200,9 @@ function compressResponses(basePath: string): MiddlewareHandler {
 }
 
 const csrfGuard: MiddlewareHandler = async (c, next) => {
+  // The mail server's sign-in page sends the browser back here, so this one
+  // arrives cross-site by design. Its state, bound to a cookie, stands in.
+  if (c.req.method === "GET" && c.req.path.endsWith("/api/auth/callback")) return next();
   const site = c.req.header("sec-fetch-site");
   if (site && site !== "same-origin" && site !== "none") {
     return c.json({ error: "cross_site_request" }, 403);
@@ -229,13 +233,75 @@ const smallBodies: MiddlewareHandler = (c, next) => (LARGE_BODY_ROUTE.test(c.req
 
 const requireSession: MiddlewareHandler<Env> = async (c, next) => {
   const cookie = getCookie(c, config.cookieName);
-  const session = sessions.resolve(cookie);
+  let session = sessions.resolve(cookie);
+  if (session?.tokens && needsRefresh(session.tokens)) {
+    try {
+      session = await refreshSession(cookie!, session);
+    } catch (err) {
+      // Couldn't ask the server. The token may still have a few minutes; if
+      // not, the call itself will say so.
+      console.warn("[ihasmail] token refresh failed:", (err as Error).message);
+    }
+    if (!session) {
+      deleteCookie(c, config.cookieName, { path: cookiePath });
+      return c.json({ error: "unauthenticated" }, 401);
+    }
+  }
   if (!session) {
     return c.json({ error: "unauthenticated" }, 401);
   }
   c.set("session", session);
   await next();
 };
+
+/*
+ * One refresh per session at a time: a page opening does several requests at
+ * once, and each would otherwise renew the same token.
+ */
+const refreshing = new Map<string, Promise<LiveSession | null>>();
+
+/**
+ * Renew an OAuth session's access token and keep the new one. Null when the
+ * server refused the refresh token (a password change revokes it), which
+ * ends the session.
+ */
+function refreshSession(cookie: string, session: LiveSession): Promise<LiveSession | null> {
+  let inFlight = refreshing.get(session.id);
+  if (!inFlight) {
+    inFlight = (async () => {
+      const renewed = await refreshTokens(upstreamFor(session.username), session.tokens!);
+      if (!renewed) {
+        sessions.destroy(session.id);
+        forgetUpstreamSession(session.id);
+        return null;
+      }
+      sessions.updateTokens(cookie, renewed);
+      return sessions.resolve(cookie);
+    })().finally(() => refreshing.delete(session.id));
+    refreshing.set(session.id, inFlight);
+  }
+  return inFlight;
+}
+
+/**
+ * What push keeps to renew an account's subscription long after the session
+ * that started it. A password is good until it changes; OAuth tokens get a
+ * copy that renews itself, since push outlives any one access token.
+ */
+export function pushCredential(session: LiveSession): { get(): Promise<string> } {
+  if (!session.tokens) {
+    const authorization = session.authorization;
+    return { get: async () => authorization };
+  }
+  let tokens: TokenSet = session.tokens;
+  const base = upstreamFor(session.username);
+  return {
+    async get() {
+      if (needsRefresh(tokens)) tokens = (await refreshTokens(base, tokens)) ?? tokens;
+      return `Bearer ${tokens.access}`;
+    },
+  };
+}
 
 /**
  * Scope the session cookie to the mount, not the whole host.
@@ -316,11 +382,85 @@ export function createApp(basePath = config.basePath): Hono<Env> {
       /* Sent before sign-in like the rest of this: it says what the
          installation has decided, not anything about who is asking. */
       settingsPolicy: config.settingsPolicy,
+      /* "oauth": sign in on the mail server's own page (see oauth.ts). */
+      signIn: oauthEnabled() ? "oauth" : "password",
     }),
   );
 
   // ---------- Auth ----------
+  /*
+   * Sign-in through the mail server's page. `start` sends the browser there;
+   * `callback` is where the server sends it back. See oauth.ts.
+   */
+  const OAUTH_STATE_COOKIE = `${config.cookieName}_signin`;
+
+  api.get("/auth/oauth/start", async (c) => {
+    if (!oauthEnabled()) return c.json({ error: "not_found" }, 404);
+    const rateIp = rateLimitKey(clientIp(c));
+    if (!loginFloodLimiter.check(rateIp)) {
+      c.header("Retry-After", String(loginFloodLimiter.retryAfterSeconds(rateIp)));
+      return c.redirect(`${basePath}/?signin_error=rate_limited`, 302);
+    }
+    const username = (c.req.query("username") ?? "").trim().slice(0, 320);
+    try {
+      const { location, state } = await startSignIn({ username, base: upstreamFor(username), remember: c.req.query("remember") === "1" });
+      setCookie(c, OAUTH_STATE_COOKIE, state, { httpOnly: true, sameSite: "Lax", secure: isSecureRequest(c), path: `${basePath}/api/auth`, maxAge: 600 });
+      return c.redirect(location, 302);
+    } catch (err) {
+      console.warn("[ihasmail] could not start sign-in:", (err as Error).message);
+      return c.redirect(`${basePath}/?signin_error=unavailable`, 302);
+    }
+  });
+
+  api.get("/auth/callback", async (c) => {
+    if (!oauthEnabled()) return c.json({ error: "not_found" }, 404);
+    const boundState = getCookie(c, OAUTH_STATE_COOKIE);
+    deleteCookie(c, OAUTH_STATE_COOKIE, { path: `${basePath}/api/auth` });
+    const fail = (code: string) => c.redirect(`${basePath}/?signin_error=${code}`, 302);
+    const rateIp = rateLimitKey(clientIp(c));
+    if (!loginFloodLimiter.check(rateIp)) return fail("rate_limited");
+    const state = c.req.query("state") ?? "";
+    const code = c.req.query("code") ?? "";
+    // The server's page sends `error` when the person cancels or is refused.
+    if (!code || c.req.query("error")) return fail("cancelled");
+    let result;
+    try {
+      result = await finishSignIn({ state, boundState, code });
+    } catch (err) {
+      if (err instanceof SignInError) return fail(err.code);
+      console.warn("[ihasmail] sign-in exchange failed:", (err as Error).message);
+      return fail("unavailable");
+    }
+    const authorization = `Bearer ${result.tokens.access}`;
+    try {
+      const upstream = await fetchUpstreamSession(authorization, result.base);
+      if (!hasStalwartRegistry(upstream)) return fail("unsupported_server");
+      const username = upstream.username || result.username;
+      // Every later call finds the account's server from its name. If the
+      // server signed in an account that routes elsewhere, calls would go to
+      // the wrong server, so refuse it.
+      if (upstreamFor(username) !== result.base) return fail("wrong_account");
+      const { cookie, session } = sessions.create({
+        username,
+        account: accountKey(result.base, username),
+        tokens: result.tokens,
+        remember: result.remember,
+        userAgent: c.req.header("user-agent") ?? "",
+        ip: clientIp(c),
+      });
+      setSessionCookie(c, cookie, session.remember);
+      const mailAccount = upstream.primaryAccounts?.["urn:ietf:params:jmap:mail"];
+      if (mailAccount) pushPrepare(session.username, mailAccount, pushCredential(session));
+      return c.redirect(`${basePath}/`, 302);
+    } catch (err) {
+      console.warn("[ihasmail] sign-in failed after the exchange:", (err as Error).message);
+      return fail("unavailable");
+    }
+  });
+
   api.post("/auth/login", async (c) => {
+    // With sign-in on the mail server's page, this form never sees a password.
+    if (oauthEnabled()) return c.json({ error: "oauth_required", message: "Sign in on the mail server's page." }, 403);
     const ip = clientIp(c);
     // What the limits count under: the address, or its /64 for IPv6.
     const rateIp = rateLimitKey(ip);
@@ -396,7 +536,7 @@ export function createApp(basePath = config.basePath): Hono<Env> {
       // Start the account's push subscription now, so it is usually verified
       // by the time the browser opens its stream. See push.ts.
       const mailAccount = upstream.primaryAccounts?.["urn:ietf:params:jmap:mail"];
-      if (mailAccount) pushPrepare(session.username, mailAccount, session.authorization);
+      if (mailAccount) pushPrepare(session.username, mailAccount, pushCredential(session));
       const info = await getAccountInfo(session.id, session.authorization, upstream);
       return c.json(localizeSession(upstream, sessionExtras(session, info)));
     } catch (err) {
@@ -535,6 +675,14 @@ export function createApp(basePath = config.basePath): Hono<Env> {
     } catch (err) {
       return accountFailure(c, err);
     }
+    if (session.tokens) {
+      // The server revokes every token when the password changes, this
+      // session's included, so there is nothing to keep: sign in again.
+      forgetUpstreamSession(session.id);
+      const revoked = sessions.destroyAllForUser(session.account);
+      deleteCookie(c, config.cookieName, { path: cookiePath });
+      return c.json({ ok: true, revokedSessions: revoked - 1, signedOut: true });
+    }
     // The old password is now dead: re-seal this session with the new one and
     // drop the others, whose sealed copies would fail on their next call.
     const otpCode = body.otpCode?.trim();
@@ -625,6 +773,16 @@ export function createApp(basePath = config.basePath): Hono<Env> {
     } catch (err) {
       return accountFailure(c, err);
     }
+    if (session.tokens) {
+      // Signed in on the server's page, where two-factor is asked for, so
+      // nothing here needs moving onto an app password.
+      try {
+        await enableOtp(ctx, { url: body.url, code, current: body.current });
+      } catch (err) {
+        return accountFailure(c, err);
+      }
+      return c.json({ ok: true, ...(await afterCredentialChange(c, session)) });
+    }
     let app: { id: string; secret: string } | null = null;
     try {
       app = await createAppPassword(ctx, { description: appPasswordName(c) });
@@ -663,6 +821,7 @@ export function createApp(basePath = config.basePath): Hono<Env> {
     } catch (err) {
       return accountFailure(c, err);
     }
+    if (session.tokens) return c.json({ ok: true, ...(await afterCredentialChange(c, session)) });
     // This session may be running on the app password minted when 2FA went on;
     // the plain password works again now, so put it back.
     sessions.reseal(getCookie(c, config.cookieName), body.current);
@@ -880,7 +1039,7 @@ export function createApp(basePath = config.basePath): Hono<Env> {
       // relay, and is moved to fan-out the moment the account verifies.
       const accountId = upstream.primaryAccounts?.["urn:ietf:params:jmap:mail"];
       const out = (c.env as { outgoing: import("node:http").ServerResponse }).outgoing;
-      if (accountId && pushAttach(session.username, accountId, session.authorization, out)) {
+      if (accountId && pushAttach(session.username, accountId, pushCredential(session), out)) {
         out.writeHead(200, SSE_HEADERS);
         out.flushHeaders();
         out.write(": subscribed\n\n");
@@ -957,6 +1116,16 @@ async function readJson<T>(c: Context): Promise<T | null> {
  * server.
  */
 async function confirmsPassword(session: LiveSession, candidate: string): Promise<boolean> {
+  if (session.tokens) {
+    // Holding no password, the only judge is the server.
+    try {
+      const authorization = `Basic ${Buffer.from(`${session.username}:${candidate}`, "utf8").toString("base64")}`;
+      await fetchUpstreamSession(authorization, upstreamFor(session.username));
+      return true;
+    } catch {
+      return false;
+    }
+  }
   const decoded = Buffer.from(session.authorization.replace(/^Basic /, ""), "base64").toString("utf8");
   const held = decoded.slice(decoded.indexOf(":") + 1);
   if (safeEqual(held, candidate)) return true;
@@ -971,6 +1140,24 @@ async function confirmsPassword(session: LiveSession, candidate: string): Promis
     return true;
   } catch {
     return false;
+  }
+}
+
+/**
+ * After a two-factor change on a token session: whether the server still
+ * honors this session's token. If it revoked it, end the session here too,
+ * so the web app can send the person to sign in again.
+ */
+async function afterCredentialChange(c: Context<Env>, session: LiveSession): Promise<{ signedOut: boolean }> {
+  forgetUpstreamSession(session.id);
+  try {
+    await fetchUpstreamSession(session.authorization, upstreamFor(session.username));
+    return { signedOut: false };
+  } catch (err) {
+    if (!(err instanceof UpstreamError && err.status === 401)) return { signedOut: false };
+    sessions.destroyAllForUser(session.account);
+    deleteCookie(c, config.cookieName, { path: cookiePath });
+    return { signedOut: true };
   }
 }
 
@@ -999,6 +1186,8 @@ function sessionExtras(session: LiveSession, info: AccountInfo = { locale: null,
       sessionId: session.id,
       loginName: session.username,
       remember: session.remember,
+      /** "oauth": signed in on the mail server's page, holding tokens, not a password. */
+      signIn: session.tokens ? "oauth" : "password",
       /** Locale configured for the account in Stalwart's directory, if readable. */
       userLocale: info.locale,
       /**

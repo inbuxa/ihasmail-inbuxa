@@ -262,6 +262,20 @@ function httpUrl(raw: string, where: string): string {
 
 const stalwartServers = readStalwartServers();
 
+/*
+ * Signing in through the mail server's own page. On when OAUTH_CLIENT_SECRET
+ * is set: the secret of the confidential client the server registers for this
+ * webmail (INBUXA registers `ihasmail-inbuxa` from INBUXA_WEBMAIL_URL and
+ * INBUXA_WEBMAIL_CLIENT_SECRET). PUBLIC_URL is where browsers reach ihasmail,
+ * without BASE_PATH; the redirect URI is built from it and must match the one
+ * registered exactly.
+ */
+const oauthClientSecret = process.env.OAUTH_CLIENT_SECRET ?? "";
+const publicUrl = process.env.PUBLIC_URL ? httpUrl(process.env.PUBLIC_URL, "PUBLIC_URL") : "";
+if (oauthClientSecret && !publicUrl) {
+  throw new Error("OAUTH_CLIENT_SECRET is set but PUBLIC_URL is not: the sign-in redirect needs ihasmail's public address");
+}
+
 export const config = {
   isProd,
   appName: env("APP_NAME", "ihasmail"),
@@ -314,6 +328,10 @@ export const config = {
    * should not suggest they come without the license.
    */
   showEnterpriseNotices: bool("SHOW_ENTERPRISE_NOTICES", false),
+  /** See the note above `config`. Empty keeps the password form. */
+  oauthClientSecret,
+  oauthClientId: env("OAUTH_CLIENT_ID", "ihasmail-inbuxa"),
+  publicUrl,
   appSecret,
   trustProxy: bool("TRUST_PROXY", true),
   /**

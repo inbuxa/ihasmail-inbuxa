@@ -6,6 +6,7 @@ import { formatFullDate } from "@/lib/format";
 import { toast } from "@/ui/toast";
 import { confirmDialog, Dialog } from "@/ui/dialog";
 import { plural, t, tNode } from "@/lib/i18n";
+import { SIGNIN_NOTICE_KEY } from "@/views/Login";
 
 interface SessionRow {
   id: string;
@@ -109,7 +110,18 @@ export function SecuritySettings() {
 
 /* ------------------------------------------------------------------ */
 
+/**
+ * A change that ended this session on the server (with sign-in on the mail
+ * server's page, a new password revokes every token): sign out here too, and
+ * leave the sign-in page a line saying why.
+ */
+async function signedOutBy(notice: string) {
+  try { sessionStorage.setItem(SIGNIN_NOTICE_KEY, notice); } catch { /* storage may be unavailable */ }
+  await useSession.getState().logout();
+}
+
 function PasswordForm({ otpEnabled, onChanged }: { otpEnabled: boolean; onChanged: () => void }) {
+  const tokenSession = useSession((s) => s.session?.ihasmail?.signIn === "oauth");
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -124,11 +136,15 @@ function PasswordForm({ otpEnabled, onChanged }: { otpEnabled: boolean; onChange
     }
     setBusy(true);
     try {
-      const res = await apiFetch<{ revokedSessions: number }>("/api/account/password", {
+      const res = await apiFetch<{ revokedSessions: number; signedOut?: boolean }>("/api/account/password", {
         method: "POST",
         body: JSON.stringify({ current, next, otpCode: code || undefined }),
       });
       setCurrent(""); setNext(""); setConfirm(""); setCode("");
+      if (res.signedOut) {
+        await signedOutBy("password_changed");
+        return;
+      }
       toast.success(res.revokedSessions ? `Password changed. ${res.revokedSessions} other session(s) signed out.` : "Password changed");
       onChanged();
     } catch (err) {
@@ -140,7 +156,11 @@ function PasswordForm({ otpEnabled, onChanged }: { otpEnabled: boolean; onChange
 
   return (
     <form onSubmit={submit}>
-      <p className="hint" style={{ marginBottom: 12 }}>{t("Changing your password signs out your other webmail sessions. Any app passwords keep working.")}</p>
+      <p className="hint" style={{ marginBottom: 12 }}>
+        {tokenSession
+          ? t("Changing your password signs you out everywhere, here included, and you sign in again with the new one. Any app passwords keep working.")
+          : t("Changing your password signs out your other webmail sessions. Any app passwords keep working.")}
+      </p>
       <div className="field" style={{ maxWidth: 380 }}>
         <label htmlFor="pw-current">{t("Current password")}</label>
         <input id="pw-current" type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} required />
@@ -185,7 +205,11 @@ function TwoFactorOff({ reload }: { reload: () => Promise<void> }) {
   const disable = async () => {
     setBusy(true);
     try {
-      await apiFetch("/api/account/2fa/disable", { method: "POST", body: JSON.stringify({ current: password, code }) });
+      const res = await apiFetch<{ signedOut?: boolean }>("/api/account/2fa/disable", { method: "POST", body: JSON.stringify({ current: password, code }) });
+      if (res?.signedOut) {
+        await signedOutBy("signed_out");
+        return;
+      }
       setDisabling(false);
       await reload();
       toast.success(t("Two-factor authentication is off"));

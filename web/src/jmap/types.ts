@@ -31,6 +31,8 @@ export interface JmapSession {
     maxUploadBytes: number;
     sessionId: string;
     loginName: string;
+    /** "oauth" when signed in on the mail server's page (ihasmail-inbuxa); absent from older servers. */
+    signIn?: "oauth" | "password";
     remember: boolean;
     /** Locale configured for the account in Stalwart, if the server exposes it. */
     userLocale?: string | null;

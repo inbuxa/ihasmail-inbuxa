@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 import { randomBytes } from "node:crypto";
 import { config } from "./config.js";
 import { deriveKey, open, randomToken, safeEqual, seal, sha256 } from "./crypto.js";
+import type { TokenSet } from "./oauth.js";
 
 export interface StoredSession {
   id: string;
@@ -10,7 +11,7 @@ export interface StoredSession {
   secretHash: string;
   /** base64 random salt for key derivation */
   salt: string;
-  /** sealed JSON {username, password} */
+  /** sealed JSON: `{u, p}` for a password, `{u, t}` for OAuth tokens (see oauth.ts) */
   sealedCredentials: string;
   username: string;
   /** Which account this is; see `accountKey`. Absent on sessions saved before it existed. */
@@ -28,8 +29,10 @@ export interface LiveSession {
   username: string;
   /** See `accountKey`. */
   account: string;
-  /** Basic Authorization header value for upstream calls. */
+  /** Authorization header value for upstream calls: Basic, or Bearer for OAuth. */
   authorization: string;
+  /** The OAuth tokens behind `authorization`, or null for a password session. */
+  tokens: TokenSet | null;
   remember: boolean;
   createdAt: number;
   lastSeenAt: number;
@@ -71,7 +74,9 @@ export interface CreateSessionParams {
   username: string;
   /** From `accountKey`; defaults to the lower-cased username. */
   account?: string;
-  password: string;
+  /** Exactly one of `password` and `tokens`. */
+  password?: string;
+  tokens?: TokenSet;
   remember: boolean;
   userAgent: string;
   ip: string;
@@ -107,6 +112,8 @@ export interface SessionBackend {
   create(params: CreateSessionParams): { cookie: string; session: LiveSession };
   resolve(cookie: string | undefined): LiveSession | null;
   reseal(cookie: string | undefined, password: string): boolean;
+  /** Store renewed OAuth tokens in place of the ones the session holds. */
+  updateTokens(cookie: string | undefined, tokens: TokenSet): boolean;
   destroy(id: string): void;
   /** `account` is an `accountKey`, as carried on `LiveSession.account`. */
   destroyAllForUser(account: string, exceptId?: string): number;
@@ -114,6 +121,15 @@ export interface SessionBackend {
 }
 
 const COOKIE_SEP = ".";
+
+/** What a session seals: a password, or OAuth tokens. */
+type Sealed = { u: string; p: string } | { u: string; t: TokenSet };
+
+function sealable(username: string, params: { password?: string; tokens?: TokenSet }): Sealed {
+  if (params.tokens) return { u: username, t: params.tokens };
+  if (params.password !== undefined) return { u: username, p: params.password };
+  throw new Error("a session needs a password or tokens");
+}
 
 export class SessionStore implements SessionBackend {
   private sessions = new Map<string, StoredSession>();
@@ -194,7 +210,7 @@ export class SessionStore implements SessionBackend {
       id,
       secretHash: sha256(secret),
       salt: salt.toString("base64"),
-      sealedCredentials: seal(JSON.stringify({ u: params.username, p: params.password }), key),
+      sealedCredentials: seal(JSON.stringify(sealable(params.username, params)), key),
       username: params.username,
       account: params.account ?? params.username.trim().toLowerCase(),
       createdAt: now,
@@ -207,7 +223,7 @@ export class SessionStore implements SessionBackend {
     this.sessions.set(id, stored);
     this.scheduleSave();
     const cookie = `${id}${COOKIE_SEP}${secret}`;
-    return { cookie, session: this.toLive(stored, params.username, params.password) };
+    return { cookie, session: this.toLive(stored, sealable(params.username, params)) };
   }
 
   /** Resolve a cookie to a live session (with decrypted upstream credentials). */
@@ -229,9 +245,9 @@ export class SessionStore implements SessionBackend {
     const key = deriveKey(secret, config.appSecret, Buffer.from(stored.salt, "base64"));
     const json = open(stored.sealedCredentials, key);
     if (!json) return null;
-    let creds: { u: string; p: string };
+    let creds: Sealed;
     try {
-      creds = JSON.parse(json) as { u: string; p: string };
+      creds = JSON.parse(json) as Sealed;
     } catch {
       return null;
     }
@@ -242,7 +258,7 @@ export class SessionStore implements SessionBackend {
       stored.expiresAt = now + ttl;
       this.scheduleSave();
     }
-    return this.toLive(stored, creds.u, creds.p);
+    return this.toLive(stored, creds);
   }
 
   /**
@@ -255,6 +271,14 @@ export class SessionStore implements SessionBackend {
    * secret half of it, which the server never keeps.
    */
   reseal(cookie: string | undefined, password: string): boolean {
+    return this.rewrite(cookie, (username) => ({ u: username, p: password }));
+  }
+
+  updateTokens(cookie: string | undefined, tokens: TokenSet): boolean {
+    return this.rewrite(cookie, (username) => ({ u: username, t: tokens }));
+  }
+
+  private rewrite(cookie: string | undefined, next: (username: string) => Sealed): boolean {
     if (!cookie) return false;
     const idx = cookie.indexOf(COOKIE_SEP);
     if (idx <= 0) return false;
@@ -264,7 +288,7 @@ export class SessionStore implements SessionBackend {
     if (!stored) return false;
     if (!safeEqual(stored.secretHash, sha256(secret))) return false;
     const key = deriveKey(secret, config.appSecret, Buffer.from(stored.salt, "base64"));
-    stored.sealedCredentials = seal(JSON.stringify({ u: stored.username, p: password }), key);
+    stored.sealedCredentials = seal(JSON.stringify(next(stored.username)), key);
     this.scheduleSave();
     return true;
   }
@@ -295,12 +319,16 @@ export class SessionStore implements SessionBackend {
     return out;
   }
 
-  private toLive(s: StoredSession, username: string, password: string): LiveSession {
+  private toLive(s: StoredSession, creds: Sealed): LiveSession {
+    const username = creds.u;
     return {
       id: s.id,
       username,
       account: accountOf(s),
-      authorization: `Basic ${Buffer.from(`${username}:${password}`, "utf8").toString("base64")}`,
+      authorization: "t" in creds
+        ? `Bearer ${creds.t.access}`
+        : `Basic ${Buffer.from(`${username}:${creds.p}`, "utf8").toString("base64")}`,
+      tokens: "t" in creds ? creds.t : null,
       remember: s.remember,
       createdAt: s.createdAt,
       lastSeenAt: s.lastSeenAt,

@@ -39,7 +39,7 @@ interface AccountPush {
   accountId: string;
   base: string;
   token: string;                          // what Stalwart puts in the URL
-  authorization: string;                  // one live session's credential, for set/verify/renew
+  credential: PushCredential;             // one live session's credential, for set/verify/renew
   subscriptionId: string | null;
   state: "pending" | "verified" | "failed";
   since: number;
@@ -47,6 +47,15 @@ interface AccountPush {
   tabs: Set<ServerResponse>;
   /** Tabs still on the per-tab relay, with the hook that ends their upstream request. */
   relays: Map<ServerResponse, () => void>;
+}
+
+/**
+ * How push authenticates its own calls. A password session's is fixed; an
+ * OAuth session's renews its access token itself, since a subscription lives
+ * for days and an access token for an hour. See pushCredential() in app.ts.
+ */
+export interface PushCredential {
+  get(): Promise<string>;
 }
 
 const byKey = new Map<string, AccountPush>();
@@ -60,10 +69,11 @@ export function pushEnabled(): boolean {
 function keyFor(base: string, username: string) { return `${base} ${username}`; }
 
 async function jmap(entry: AccountPush, calls: unknown[]) {
-  const upstream = await getUpstreamSession(entry.key, entry.authorization, entry.base);
+  const authorization = await entry.credential.get();
+  const upstream = await getUpstreamSession(entry.key, authorization, entry.base);
   const res = await fetch(absoluteUpstream(upstream.apiUrl, upstream.baseUrl), {
     method: "POST",
-    headers: { authorization: entry.authorization, "content-type": "application/json", accept: "application/json" },
+    headers: { authorization, "content-type": "application/json", accept: "application/json" },
     body: JSON.stringify({ using: USING, methodCalls: calls }),
     signal: AbortSignal.timeout(config.upstreamTimeout),
   });
@@ -159,14 +169,14 @@ async function unsubscribe(entry: AccountPush) {
  * by the time the browser opens its stream the verification is usually
  * already in flight, and called again by attach() as a safety net.
  */
-export function prepare(username: string, accountId: string, authorization: string): AccountPush | null {
+export function prepare(username: string, accountId: string, credential: PushCredential): AccountPush | null {
   if (!pushEnabled()) return null;
   const base = upstreamFor(username);
   const key = keyFor(base, username);
   let entry = byKey.get(key);
   if (!entry) {
     entry = { key, username, accountId, base, token: randomBytes(32).toString("base64url"),
-              authorization, subscriptionId: null, state: "pending", since: Date.now(), expires: 0, tabs: new Set(), relays: new Map() };
+              credential, subscriptionId: null, state: "pending", since: Date.now(), expires: 0, tabs: new Set(), relays: new Map() };
     byKey.set(key, entry); byToken.set(entry.token, entry);
     subscribe(entry).catch((err) => {
       entry!.state = "failed";
@@ -174,7 +184,7 @@ export function prepare(username: string, accountId: string, authorization: stri
     });
     startSweeper();
   } else {
-    entry.authorization = authorization;  // keep a live credential for renewals
+    entry.credential = credential;  // keep a live credential for renewals
   }
   return entry;
 }
@@ -183,8 +193,8 @@ export function prepare(username: string, accountId: string, authorization: stri
  * Called when a tab opens. Returns the account's push entry if the tab can
  * be served by fan-out right now, or null if it must hold its own relay.
  */
-export function attach(username: string, accountId: string, authorization: string, out: ServerResponse): AccountPush | null {
-  const entry = prepare(username, accountId, authorization);
+export function attach(username: string, accountId: string, credential: PushCredential, out: ServerResponse): AccountPush | null {
+  const entry = prepare(username, accountId, credential);
   if (!entry || entry.state !== "verified") return null;
   entry.tabs.add(out);
   out.on("close", () => { entry.tabs.delete(out); });

@@ -5,6 +5,9 @@ process.env.STALWART_URL = "http://127.0.0.1:1";
 process.env.PUSH_URL = "https://ihasmail.example";
 const push = await import("./push.js");
 
+/** A fixed credential, as a password session hands push. */
+const cred = (authorization: string) => ({ get: async () => authorization });
+
 // Nothing in this file may reach the network. Background subscribe() calls
 // outlive the test that started them, so the stub stays in place for the
 // whole file rather than per test; the per-test stubs below layer on top.
@@ -46,7 +49,7 @@ test("a tab opened before verification gets no fan-out, and a subscription is st
   const restore = stubUpstream();
   try {
     const out = fakeOut();
-    const entry = push.attach("someone@example.com", "a", "Basic x", out as never);
+    const entry = push.attach("someone@example.com", "a", cred("Basic x"), out as never);
     assert.equal(entry, null, "not verified yet, so the tab must keep its own relay");
     await new Promise((r) => setTimeout(r, 30));
     const st = push.pushStatus();
@@ -59,7 +62,7 @@ test("verification then fan-out: one POST reaches every open tab for the account
   try {
     // First contact starts the subscription; wait for the stubbed create to land.
     const first = fakeOut();
-    push.attach("fan@example.com", "a", "Basic y", first as never);
+    push.attach("fan@example.com", "a", cred("Basic y"), first as never);
     await new Promise((r) => setTimeout(r, 30));
     // Find the token Stalwart would have been given, the way Stalwart learns it: from the subscribe call.
     // We cannot read it back through the public API, so verify via the status transition instead:
@@ -75,7 +78,7 @@ test("a StateChange is written to attached tabs as an SSE frame, and closed tabs
   const restore = stubUpstream();
   try {
     const out1 = fakeOut(), out2 = fakeOut();
-    push.attach("frame@example.com", "a", "Basic z", out1 as never);
+    push.attach("frame@example.com", "a", cred("Basic z"), out1 as never);
     await new Promise((r) => setTimeout(r, 30));
     // Verify by handing the module its own token: pushStatus does not expose it, so read it from the
     // subscribe request the stub saw. Simplest faithful route: capture the URL Stalwart would POST to.
@@ -88,14 +91,14 @@ test("a StateChange is written to attached tabs as an SSE frame, and closed tabs
       return real(input, init);
     }) as typeof fetch;
     // Force a renewal-style subscribe so the URL passes through the capturing fetch.
-    push.attach("frame2@example.com", "a", "Basic w", out1 as never);
+    push.attach("frame2@example.com", "a", cred("Basic w"), out1 as never);
     await new Promise((r) => setTimeout(r, 30));
     globalThis.fetch = real;
     assert.ok(token, "the subscribe call carries the push URL with the token");
     assert.equal(await push.receive(token!, { "@type": "PushVerification", verificationCode: "v" }), 200);
-    const entry = push.attach("frame2@example.com", "a", "Basic w", out1 as never);
+    const entry = push.attach("frame2@example.com", "a", cred("Basic w"), out1 as never);
     assert.ok(entry, "verified: the tab is served by fan-out");
-    push.attach("frame2@example.com", "a", "Basic w", out2 as never);
+    push.attach("frame2@example.com", "a", cred("Basic w"), out2 as never);
     assert.equal(await push.receive(token!, { "@type": "StateChange", changed: { a: { Email: "s1" } } }), 200);
     assert.match(out1.written.at(-1) ?? "", /^event: state\ndata: \{"@type":"StateChange"/);
     assert.equal(out2.written.length, 1);
@@ -119,12 +122,12 @@ test("a tab on the relay is moved to fan-out when its account verifies, and its 
       if (m) token = m[1];
       return real(input, init);
     }) as typeof fetch;
-    push.prepare("move@example.com", "a", "Basic m");        // sign-in starts the subscription
+    push.prepare("move@example.com", "a", cred("Basic m"));        // sign-in starts the subscription
     await new Promise((r) => setTimeout(r, 30));
     globalThis.fetch = real;
     assert.ok(token);
     const out = fakeOut(); let dropped = 0;
-    assert.equal(push.attach("move@example.com", "a", "Basic m", out as never), null, "not yet verified: relay");
+    assert.equal(push.attach("move@example.com", "a", cred("Basic m"), out as never), null, "not yet verified: relay");
     push.attachRelay("move@example.com", out as never, () => { dropped++; });
     assert.equal(push.pushStatus().tabs.relay >= 1, true);
     assert.equal(await push.receive(token!, { "@type": "PushVerification", verificationCode: "v" }), 200);
@@ -168,7 +171,7 @@ test("a new subscription clears what this installation left behind, and only tha
   }) as typeof fetch;
   try {
     // The installation's prefix, learned the way the server makes it: from its first create.
-    push.prepare("probe-prefix@example.com", "a", "Basic p");
+    push.prepare("probe-prefix@example.com", "a", cred("Basic p"));
     await new Promise((r) => setTimeout(r, 30));
     const firstCreate = calls.find(([n, a]) => n === "PushSubscription/set" && a.create);
     const deviceId = String(firstCreate?.[1].deviceClientId ?? "");
@@ -176,7 +179,7 @@ test("a new subscription clears what this installation left behind, and only tha
     ownPrefix = deviceId.slice(0, deviceId.lastIndexOf("-") + 1);
 
     calls.length = 0;
-    push.prepare("restart@example.com", "a", "Basic r");
+    push.prepare("restart@example.com", "a", cred("Basic r"));
     await new Promise((r) => setTimeout(r, 30));
     const destroyed = calls.filter(([n, a]) => n === "PushSubscription/set" && a.destroy).flatMap(([, a]) => a.destroy as string[]);
     assert.deepEqual(destroyed, ["mine-before"], "only this installation's leftover goes");

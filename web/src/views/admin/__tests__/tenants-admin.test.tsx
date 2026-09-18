@@ -21,7 +21,7 @@ const PERMS = ["sysTenantGet", "sysTenantQuery", "sysTenantCreate"];
 const signIn = (edition: string | null, enterpriseNotices = false) =>
   useSession.setState({ session: { capabilities: {}, accounts: {}, primaryAccounts: {}, username: "a@example.com", ihasmail: { permissions: PERMS, server: { edition, enterpriseNotices } } } as unknown as JmapSession });
 
-/** Tenants are managed on Enterprise only; anywhere else the page is the notice and nothing more. */
+/** INBUXA: tenants are managed on every server, whatever edition it reports. */
 describe("the Tenants page", () => {
   let host: HTMLDivElement;
   let root: Root;
@@ -43,25 +43,17 @@ describe("the Tenants page", () => {
     host.remove();
   });
 
-  for (const edition of ["community", "oss", null]) {
-    it(`shows only the notice on ${edition ?? "a server that reports no edition"}`, async () => {
+  for (const edition of ["community", "oss", null, "enterprise"]) {
+    it(`lists and offers tenants on ${edition ?? "a server that reports no edition"}, with no Enterprise notice`, async () => {
       signIn(edition);
       await render();
-      expect(host.querySelector(".admin-notice.warn")?.textContent).toContain("Tenants are a Stalwart Enterprise feature");
-      expect(host.textContent).not.toContain("New tenant");
-      expect(host.querySelector('input[type="search"]')).toBeNull();
-      expect(host.querySelector(".admin-table")).toBeNull();
-      expect(api.queryTenants).not.toHaveBeenCalled();
+      expect(host.querySelector(".admin-notice")).toBeNull();
+      expect(host.textContent).toContain("New tenant");
+      expect(host.querySelector(".admin-table")?.textContent).toContain("Acme Corp");
+      expect(api.queryTenants).toHaveBeenCalled();
     });
   }
 
-  it("lists and offers tenants on Enterprise, and does not say they are Enterprise", async () => {
-    signIn("enterprise");
-    await render();
-    expect(host.querySelector(".admin-notice")).toBeNull();
-    expect(host.textContent).toContain("New tenant");
-    expect(host.querySelector(".admin-table")?.textContent).toContain("Acme Corp");
-  });
 });
 
 describe("the Tenants page where the installation asks for Enterprise notices", () => {

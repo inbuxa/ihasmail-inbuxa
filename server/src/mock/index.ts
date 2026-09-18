@@ -14,6 +14,7 @@ import { MAX_OBJECTS, MethodError, directory, enforceLimits, resolveRefs } from 
 import { handlers } from "./handlers.js";
 export { account } from "./config.js";
 import { checkOtp } from "./auth.js";
+import { checkBearer, handleOAuth } from "./oauth.js";
 import { sseClients, broadcast } from "./events.js";
 
 /* ---------- http ---------- */
@@ -24,6 +25,7 @@ function unauthorized(res: ServerResponse) {
 
 function checkAuth(req: IncomingMessage): boolean {
   const h = req.headers.authorization ?? "";
+  if (checkBearer(h)) return true;
   if (!h.startsWith("Basic ")) return false;
   const raw = Buffer.from(h.slice(6), "base64").toString();
   const sep = raw.indexOf(":");
@@ -77,6 +79,7 @@ const session = () => ({
 /** Exported so tests can drive the mock in-process and shut it down. */
 export const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? "/", `http://127.0.0.1:${PORT}`);
+  if (await handleOAuth(req, res, url)) return;
   if (!checkAuth(req)) return unauthorized(res);
   if (url.pathname === "/.well-known/jmap" || url.pathname === "/jmap/session") {
     res.writeHead(200, { "content-type": "application/json" });
