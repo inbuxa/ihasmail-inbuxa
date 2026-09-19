@@ -192,7 +192,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 app there was no way back to it.
                 ihasmail-inbuxa: INBUXA's site, and no Documentation entry until
                 INBUXA has documentation of its own to point at. */}
-            <MenuItem icon={<Globe size={16} />} label={t("About INBUXA")} href="https://inbuxa.org" external />
+            <MenuItem icon={<Globe size={16} />} label={t("About {app}", { app: appName })} href="https://inbuxa.org" external />
             <MenuItem icon={<Settings size={16} />} label={t("Settings")} onClick={() => navigate("/settings")} />
             {/* Only for an account whose Stalwart role manages other accounts.
                 Nobody else is shown an entry that would open onto refusals. */}
