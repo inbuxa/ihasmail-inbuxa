@@ -155,7 +155,7 @@ export function LoginPage() {
           <br />
           <a href="https://ihasmail.org" target="_blank" rel="noopener noreferrer">{t("ihasmail.org")}</a>
           {" · "}
-          <a href={withBase(SOURCE_ARCHIVE)} download>{t("AGPL-3.0 source")}</a>
+          <a href={withBase(SOURCE_ARCHIVE)} target="_blank" rel="noopener noreferrer">{t("AGPL-3.0 source")}</a>
           {" "}
           <span className="notranslate" translate="no">({SOURCE_ID})</span>
         </p>

@@ -21,7 +21,7 @@ export function AboutSettings() {
           <InbuxaWordmark height={26} />
           {/* A product name and a version string: neither is a word to translate. */}
           <div style={{ fontWeight: 700 }} className="notranslate" translate="no">ihasmail v{APP_VERSION}</div>
-          <div className="hint">{tNode("AGPL-3.0-or-later · {source}", { source: <a href={withBase(SOURCE_ARCHIVE)} download className="notranslate" translate="no">source.tar.gz ({SOURCE_ID})</a> })}</div>
+          <div className="hint">{tNode("AGPL-3.0-or-later · {source}", { source: <a href={withBase(SOURCE_ARCHIVE)} target="_blank" rel="noopener noreferrer" className="notranslate" translate="no">source.tar.gz ({SOURCE_ID})</a> })}</div>
         </div>
       </div>
       <h2>{t("Server")}</h2>
