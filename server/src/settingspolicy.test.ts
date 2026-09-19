@@ -59,7 +59,7 @@ test("the example's commentary cannot be mistaken for a section", () => {
  * reason: an example that no longer loads is worse than no example, because
  * the first experience of the feature is a server that refuses to start.
  */
-const SERVERS = fileURLToPath(new URL("../../stalwart-servers.example.json", import.meta.url));
+const SERVERS = fileURLToPath(new URL("../../mail-servers.example.json", import.meta.url));
 
 test("the example server mapping is valid JSON", () => {
   assert.doesNotThrow(() => JSON.parse(readFileSync(SERVERS, "utf8")));

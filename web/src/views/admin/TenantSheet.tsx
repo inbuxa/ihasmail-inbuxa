@@ -176,7 +176,7 @@ export function TenantSheet({ tenant, roles, onClose, onChanged, onCreated, onDe
         <div className="field">
           <label htmlFor="admin-tenant-logo">{t("Logo")}</label>
           <input id="admin-tenant-logo" className="input" value={logo} disabled={!editable} placeholder="https://…" spellCheck={false} onChange={(e) => setLogo(e.target.value)} />
-          <span className="hint">{t("An https address or a data URL of an image. Stalwart shows it to the tenant's people where it shows a logo.")}</span>
+          <span className="hint">{t("An https address or a data URL of an image. The mail server shows it to the tenant's people where it shows a logo.")}</span>
         </div>
 
         {!creating && (
@@ -215,7 +215,7 @@ export function TenantSheet({ tenant, roles, onClose, onChanged, onCreated, onDe
             </div>
           ))}
         </div>
-        <p className="hint">{t("Stalwart refuses to create more than a limit allows. An empty field is no limit.")}</p>
+        <p className="hint">{t("The mail server refuses to create more than a limit allows. An empty field is no limit.")}</p>
 
         <h3>{t("Role")}</h3>
         <select className="input admin-wide" aria-label={t("Role")} value={role} disabled={!editable} onChange={(e) => setRole(e.target.value)}>

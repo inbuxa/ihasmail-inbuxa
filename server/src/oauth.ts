@@ -55,7 +55,7 @@ export function oauthEnabled(): boolean {
 /**
  * Whether every account is on the same server. Then sign-in needs no address
  * first: the server's page asks for the username itself. With several servers
- * (STALWART_SERVERS_FILE), the domain picks the server, so the address comes
+ * (MAIL_SERVERS_FILE), the domain picks the server, so the address comes
  * first.
  */
 export function singleServer(): boolean {

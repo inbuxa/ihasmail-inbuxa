@@ -69,15 +69,14 @@ describe("the Tenants page where the installation asks for Enterprise notices", 
     host.remove();
   });
 
-  it("says tenants are Enterprise above the list, as the demo does", async () => {
+  it("shows no Enterprise notice, even where the installation asks for one", async () => {
     signIn("enterprise", true);
     const { hook } = memoryLocation({ path: "/admin/tenants" });
     await act(async () => {
       root.render(<Router hook={hook}><TenantsAdmin /></Router>);
     });
     await act(async () => {});
-    expect(host.querySelector(".admin-notice")?.textContent).toBe("Tenants are a Stalwart Enterprise feature.");
-    expect(host.querySelector(".admin-notice.warn")).toBeNull();
+    expect(host.querySelector(".admin-notice")).toBeNull();
     expect(host.querySelector(".admin-table")?.textContent).toContain("Acme Corp");
   });
 });

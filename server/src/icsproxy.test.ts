@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-process.env.STALWART_URL = "http://127.0.0.1:1";
+process.env.MAIL_SERVER_URL = "http://127.0.0.1:1";
 process.env.APP_SECRET = "test-secret-for-ics-proxy";
 
 const { safeFetch, safeFetchStatus } = await import("./imageproxy.js");

@@ -226,7 +226,7 @@ export function createDirectory(opts: Options) {
       push(4, "Counter", "queue.report-queued", h % 4 === 1 ? 2 : 0);
     }
   }
-  const applications: Obj[] = [{ id: "app1", description: "Stalwart Web Interface", enabled: true, urlPrefix: { "/admin": true, "/account": true } }];
+  const applications: Obj[] = [{ id: "app1", description: "Web Interface", enabled: true, urlPrefix: { "/admin": true, "/account": true } }];
 
   /** Tenants: a name, limits, and whatever names them in its memberTenantId. */
   const tenants: Obj[] = [

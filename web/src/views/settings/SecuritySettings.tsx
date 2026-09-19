@@ -60,7 +60,11 @@ export function SecuritySettings() {
   return (
     <div>
       <h1>{t("Security & sessions")}</h1>
-      <p className="lead">{tNode("You're signed in as {user}. Your password is never stored in the browser; the server keeps it encrypted per-session for talking to Stalwart.", { user: <b className="notranslate" translate="no">{session?.username}</b> })}</p>
+      <p className="lead">
+        {session?.ihasmail?.signIn === "oauth"
+          ? tNode("You're signed in as {user}. This webmail never sees your password: it holds a sign-in token from your mail server, encrypted per session.", { user: <b className="notranslate" translate="no">{session?.username}</b> })
+          : tNode("You're signed in as {user}. Your password is never stored in the browser; the server keeps it encrypted per-session for talking to the mail server.", { user: <b className="notranslate" translate="no">{session?.username}</b> })}
+      </p>
 
       <h2>{t("Password")}</h2>
       {unsupported ? (

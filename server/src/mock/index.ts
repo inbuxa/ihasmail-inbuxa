@@ -1,7 +1,7 @@
 /**
  * A tiny in-memory JMAP server that mimics the subset of Stalwart that ihasmail
  * uses. For local development and demos only:  `npm run mock` then point the
- * server at it with STALWART_URL=http://127.0.0.1:8788 (user: demo / pass: demo).
+ * server at it with MAIL_SERVER_URL=http://127.0.0.1:8788 (user: demo / pass: demo).
  */
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { parseOtpauthUrl, verifyTotp } from "../totp.js";
@@ -205,7 +205,7 @@ export const server = createServer(async (req, res) => {
   res.end(JSON.stringify({ error: "not found" }));
 }).listen(PORT, "127.0.0.1", () => {
   console.log(`[mock-stalwart] listening on http://127.0.0.1:${PORT}  (login: ${USER} / ${PASS})`);
-  console.log(`[mock-stalwart] run the app with: STALWART_URL=http://127.0.0.1:${PORT} npm run dev`);
+  console.log(`[mock-stalwart] run the app with: MAIL_SERVER_URL=http://127.0.0.1:${PORT} npm run dev`);
 });
 
 // Periodically inject a new inbox email to demo push

@@ -37,7 +37,7 @@ const SESSION_CACHE_MS = 5 * 60_000;
 /**
  * The Stalwart a username belongs to.
  *
- * `STALWART_URL` is the default and is always the answer for a domain nobody
+ * `MAIL_SERVER_URL` is the default and is always the answer for a domain nobody
  * mapped -- and for a bare username, which Stalwart accepts and which has no
  * domain to map (#238).
  *
@@ -59,7 +59,7 @@ export function upstreamFor(username: string): string {
  * Where the administrator signed in as `username` opens Stalwart's own
  * administration.
  *
- * What the operator configured wins -- STALWART_ADMIN_URL for the default
+ * What the operator configured wins -- ADMIN_URL for the default
  * server, a servers file entry's `adminUrl` for a routed domain -- and what was
  * found on the account's own server (`detected`) is used otherwise. Routing is
  * the same as `upstreamFor`: a routed domain is never pointed at the default
@@ -93,7 +93,7 @@ export function adminPrefixFrom(responses: [string, Record<string, unknown>, str
 /**
  * The public origin a Stalwart session belongs to: the host it advertises in
  * its own URLs, which is the address people reach it at even when this server
- * talks to it on a private one (STALWART_URL=http://127.0.0.1:…). A relative
+ * talks to it on a private one (MAIL_SERVER_URL=http://127.0.0.1:…). A relative
  * URL falls back to the configured base.
  */
 export function advertisedOrigin(session: Pick<UpstreamSession, "apiUrl" | "baseUrl">): string | null {
@@ -427,7 +427,7 @@ export function localizeSession(s: UpstreamSession, extras: Record<string, unkno
   };
 }
 
-/** Resolve a possibly-relative upstream URL template against STALWART_URL. */
+/** Resolve a possibly-relative upstream URL template against MAIL_SERVER_URL. */
 /**
  * Resolve a URL Stalwart handed us against the server we were configured to
  * talk to.
@@ -435,7 +435,7 @@ export function localizeSession(s: UpstreamSession, extras: Record<string, unkno
  * Stalwart advertises absolute URLs in its session -- apiUrl, eventSourceUrl
  * and the rest -- built from its public hostname, which is always https. A
  * proxy that follows them takes every upstream call, and every held push
- * stream, out through the public route even when STALWART_URL names a private
+ * stream, out through the public route even when MAIL_SERVER_URL names a private
  * plain-HTTP hop on the same network. Measured, that TLS leg is ~80 KiB of
  * native OpenSSL state per signed-in tab: 60% of what a tab costs, and the
  * whole difference between 1,665 and 3,680 tabs in 256 MiB.
@@ -443,7 +443,7 @@ export function localizeSession(s: UpstreamSession, extras: Record<string, unkno
  * So by default only the path and query are taken from the advertised URL;
  * scheme, host and port come from the configured base. That is what a proxy
  * should have done all along -- the operator named the route on purpose.
- * STALWART_FOLLOW_ADVERTISED_URLS=1 restores the old behavior for a setup
+ * MAIL_SERVER_FOLLOW_ADVERTISED_URLS=1 restores the old behavior for a setup
  * that genuinely needs to reach Stalwart at a different origin than the one
  * it was given.
  */

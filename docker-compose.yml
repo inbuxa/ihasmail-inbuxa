@@ -25,7 +25,7 @@ services:
     security_opt:
       - no-new-privileges:true
     environment:
-      STALWART_URL: ${STALWART_URL:?set STALWART_URL in .env}
+      MAIL_SERVER_URL: ${MAIL_SERVER_URL:?set MAIL_SERVER_URL in .env}
       APP_SECRET: ${APP_SECRET:?set APP_SECRET in .env (openssl rand -base64 48)}
       APP_NAME: ${APP_NAME:-ihasmail}
       BASE_PATH: ${BASE_PATH:-}

@@ -7,7 +7,6 @@ import { drawableLogo, getTenants, queryTenants, type DirectoryTenant } from "@/
 import { formatSize } from "@/lib/format";
 import { proxiedImageUrl } from "@/lib/text/html";
 import { plural, t } from "@/lib/i18n";
-import { useSession } from "@/store/session";
 import { Empty, Spinner } from "@/ui/misc";
 import { usePermissions } from "./usePermissions";
 import { TenantSheet } from "./TenantSheet";
@@ -18,23 +17,15 @@ const PAGE_SIZE = 50;
  * Tenants: separate organizations on one server, each with its own people,
  * domains and limits.
  *
- * The section is offered to whoever may read tenants. INBUXA ships tenants to
- * everybody, whatever edition the server reports, so there is no edition
- * check here (public ihasmail shows only a notice unless the server reports
- * Enterprise). SHOW_ENTERPRISE_NOTICES still adds the notice, for talking to
- * upstream Stalwart.
+ * The section is offered to whoever may read tenants. The INBUXA mail server
+ * has one edition with tenants in it, so there is no edition check and no
+ * notice here, unlike public ihasmail.
  */
 export function TenantsAdmin({ selectedId }: { selectedId?: string }) {
-  const notices = useSession((s) => s.session?.ihasmail?.server?.enterpriseNotices === true);
-  return <EnterpriseTenants selectedId={selectedId} notice={notices} />;
+  return <EnterpriseTenants selectedId={selectedId} />;
 }
 
-/** Said on every Tenants page, Enterprise or not. */
-function EnterpriseNotice({ warn }: { warn: boolean }) {
-  return <p className={`admin-notice${warn ? " warn" : ""}`}>{t("Tenants are a Stalwart Enterprise feature.")}</p>;
-}
-
-function EnterpriseTenants({ selectedId, notice }: { selectedId?: string; notice: boolean }) {
+function EnterpriseTenants({ selectedId }: { selectedId?: string }) {
   const [, navigate] = useLocation();
   const perms = usePermissions();
   const [text, setText] = useState("");
@@ -111,7 +102,6 @@ function EnterpriseTenants({ selectedId, notice }: { selectedId?: string; notice
         )}
       </div>
 
-      {notice && <EnterpriseNotice warn={false} />}
 
       <div className="admin-toolbar">
         <label className="admin-search">

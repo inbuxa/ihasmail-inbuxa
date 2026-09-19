@@ -19,7 +19,7 @@ process.env.MOCK_PORT = String(PORT);
 process.env.MOCK_USER = "demo@example.com";
 process.env.MOCK_PASS = "demo-password";
 process.env.MOCK_NO_REGISTRY = "1"; // a server without urn:stalwart:jmap
-process.env.STALWART_URL = `http://127.0.0.1:${PORT}`;
+process.env.MAIL_SERVER_URL = `http://127.0.0.1:${PORT}`;
 process.env.APP_SECRET = "test-secret-for-login-guard";
 
 const mock = await import("./mock/index.js");
@@ -48,13 +48,12 @@ test("a server without the registry is refused, with good credentials", async ()
   assert.equal(res.body.error, "unsupported_server");
 });
 
-test("the message says the credentials were fine, and names the way out", async () => {
+test("the message says the credentials were fine, and that the server isn't supported", async () => {
   const { body } = await login({ username: "demo@example.com", password: "demo-password" });
   // Someone hitting this has typed a correct password. Saying so is the
-  // difference between "upgrade your server" and "try your password again".
+  // difference between "wrong server" and "try your password again".
   assert.match(body.message, /credentials are fine/i);
-  assert.match(body.message, /0\.16/);
-  assert.match(body.message, /stalwart-0\.15-support/, "the tag to build from if they cannot upgrade");
+  assert.match(body.message, /isn't one this webmail supports/);
 });
 
 test("no session is minted for a server we cannot talk to", async () => {

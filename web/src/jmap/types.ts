@@ -40,7 +40,7 @@ export interface JmapSession {
     server?: {
       /** "oss" | "community" | "enterprise". Stalwart publishes no version. */
       edition?: string | null;
-      /** Where Stalwart's own administration is (STALWART_ADMIN_URL), for a session that may administer. */
+      /** Where Stalwart's own administration is (ADMIN_URL), for a session that may administer. */
       adminUrl?: string | null;
       /** SHOW_ENTERPRISE_NOTICES: an Enterprise-only section says so even on Enterprise. */
       enterpriseNotices?: boolean;

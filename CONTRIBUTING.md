@@ -1,6 +1,6 @@
 # Contributing to ihasmail
 
-Thanks for your interest in contributing to **ihasmail** — an immutable, JMAP-only webmail client for [Stalwart Mail Server](https://stalw.art/). Contributions of all kinds are welcome: bug reports, feature requests, code, documentation, and testing.
+Thanks for your interest in contributing to the **INBUXA webmail**, an immutable, JMAP-only webmail client for the INBUXA mail server, built on ihasmail. Contributions of all kinds are welcome: bug reports, feature requests, code, documentation, and testing.
 
 ## Code of Conduct
 
@@ -9,7 +9,7 @@ By participating in this project, you agree to treat other contributors with res
 ## Before You Start
 
 - ihasmail speaks **JMAP only** — it does not support IMAP/POP3/SMTP fallback paths. Keep this in mind when proposing features.
-- ihasmail has **no database of its own** — all state lives in Stalwart via JMAP. Contributions should not introduce a separate persistence layer without discussion first.
+- ihasmail has **no database of its own** — all state lives on the mail server, over JMAP. Contributions should not introduce a separate persistence layer without discussion first.
 - This project is licensed under **AGPL-3.0**. Any code you contribute will be distributed under this license, including for hosted/SaaS deployments.
 
 ## How to Contribute
@@ -21,9 +21,9 @@ Before opening a new issue, please search [existing issues](https://github.com/C
 - A clear, descriptive title
 - Steps to reproduce the issue
 - Expected behavior vs. actual behavior
-- Your environment: browser/OS, Stalwart version, and how ihasmail is deployed (Docker, bare metal, etc.)
+- Your environment: browser/OS, mail server version, and how ihasmail is deployed (Docker, bare metal, etc.)
 - Relevant logs, console errors, or screenshots
-- Whether the issue is reproducible against a fresh Stalwart instance
+- Whether the issue is reproducible against a fresh mail server
 
 ### Suggesting Features
 
@@ -41,7 +41,7 @@ For larger changes, please open an issue to discuss the approach **before** subm
 2. **Name your branch** descriptively, e.g. `fix/thread-view-scroll` or `feat/search-filters`.
 3. **Keep PRs focused** — one logical change per PR. Large, unrelated changes bundled together are harder to review and more likely to be rejected.
 4. **Write clear commit messages** describing what changed and why.
-5. **Test your changes** against a real (or local) Stalwart instance where possible, since JMAP behavior can be subtle.
+5. **Test your changes** against a real (or local) mail server where possible, since JMAP behavior can be subtle.
 6. **Update documentation** if your change affects setup, configuration, or user-facing behavior.
 7. **Open the pull request** against `main`, filling out the PR template with:
    - A summary of the change
@@ -117,7 +117,7 @@ Store tests do not exercise the component. At least one bug in this repo's
 history — a shift-click range measured inside a `setState` updater, which React
 runs after the anchor ref has already moved — passed every store assertion and
 failed the moment the built app was driven. If a change is visible on screen,
-run it: `npm run dev:mock` (mock Stalwart, credentials printed on start), then
+run it: `npm run dev:mock` (the mock mail server, credentials printed on start), then
 drive the real thing. Add a component test for what you find; there are
 examples in `web/src/views/*/__tests__/`.
 
@@ -128,7 +128,7 @@ examples in `web/src/views/*/__tests__/`.
    git clone https://github.com/YOUR-USERNAME/ihasmail.git
    cd ihasmail
    ```
-2. Point your local instance at a running Stalwart Mail Server (a test/dev instance is strongly recommended — do not develop against a production mailbox), or use the built-in mock below.
+2. Point your local instance at a running INBUXA mail server (a test/dev instance is strongly recommended — do not develop against a production mailbox), or use the built-in mock below.
 3. Install and run, as below.
 4. Verify your changes don't break existing JMAP calls by exercising core flows: login, list/read mail, send, search, and folder/label operations.
 
@@ -137,8 +137,8 @@ Requirements: Node ≥ 20.19 (26 recommended), npm ≥ 10.
 ```bash
 npm install
 
-npm run dev            # real Stalwart (STALWART_URL in .env) — server :8080, Vite :5173
-npm run dev:mock       # built-in mock Stalwart (demo@example.com / demo), mock on :8788
+npm run dev            # a real mail server (MAIL_SERVER_URL in .env) — server :8080, Vite :5173
+npm run dev:mock       # built-in mock mail server (demo@example.com / demo), mock on :8788
 npm run dev:mock:no-future-release   # mock that advertises FUTURERELEASE and drops every hold
 
 npm run typecheck      # tsc for both packages
@@ -153,38 +153,38 @@ build.
 #### Architecture
 
 ```
-browser  ──(same-origin /api/*)──►  ihasmail server (Node + Hono)  ──(JMAP over HTTPS)──►  Stalwart
+browser  ──(same-origin /api/*)──►  ihasmail server (Node + Hono)  ──(JMAP over HTTPS)──►  mail server
   React SPA                           • session cookie ⇄ Basic auth
   JMAP client + stores                • /api/jmap, /api/blob, /api/upload, /api/events (SSE), /api/image
 ```
 
 - `web/` — Vite + React 19 + TypeScript SPA. `src/jmap` (client, push, types), `src/store` (zustand: session, mail, compose, contacts, calendar, files, sieve, settings), `src/views`, `src/lib` (sanitizer, search parser, Sieve codec, locale-aware dates, vCard, …).
-- `server/` — Node/Hono backend: authenticates against Stalwart's JMAP session endpoint, seals the credentials with a key derived from the cookie secret, proxies JMAP/blob/SSE, serves the SPA under a strict CSP. `src/mock/` is an in-memory fake Stalwart for development and demos.
+- `server/` — Node/Hono backend: authenticates against the mail server's JMAP session endpoint, seals the credentials with a key derived from the cookie secret, proxies JMAP/blob/SSE, serves the SPA under a strict CSP. `src/mock/` is an in-memory fake mail server for development and demos.
 
 Capabilities used: `core`, `mail`, `submission`, `vacationresponse`, `sieve`,
 `contacts`(+`parse`), `calendars`(+`parse`), `principals`(+`availability`),
-`quota`, `blob`, `filenode`, EventSource push, plus Stalwart's own
-`urn:stalwart:jmap`. Features degrade gracefully when one is missing.
+`quota`, `blob`, `filenode`, EventSource push, plus the mail server's own
+registry capability. Features degrade gracefully when one is missing.
 
 #### The mock
 
-An in-memory fake Stalwart 0.16 — enough JMAP to develop and demo against
+An in-memory fake mail server — enough JMAP to develop and demo against
 without a real mailbox. It reproduces the things a naive fake would get wrong,
-because each cost a live debugging session: `urn:stalwart:jmap` advertised
+because each cost a live debugging session: the registry capability advertised
 **per-account** rather than session-level, identity signatures capped at 2047
-**bytes**, and `CalendarEvent/set` speaking Stalwart's vocabulary rather than
+**bytes**, and `CalendarEvent/set` speaking the server's vocabulary rather than
 RFC 8984's.
 
 | Switch | What it does |
 | --- | --- |
 | `MOCK_NO_FUTURE_RELEASE=1` | Advertises FUTURERELEASE, then drops every hold |
-| `MOCK_NO_REGISTRY=1` | Omits the Stalwart capability, so the sign-in refusal can be tested |
+| `MOCK_NO_REGISTRY=1` | Omits the registry capability, so the sign-in refusal can be tested |
 | `MOCK_NO_SCHEDULING_SEND=1` | Refuses a calendar write that asks for scheduling messages, as for an account without that permission |
 | `MOCK_ROLE` | Who the demo user is for Administration: `admin` (the default), `tenant-admin`, `helpdesk` or `user` |
-| `MOCK_METRICS=off` | Refuses the dashboard's metric history, as Community does |
-| `MOCK_EDITION=enterprise` | Reports Enterprise, which Tenants needs |
+| `MOCK_METRICS=off` | Refuses the dashboard's metric history, as a server without metrics history does |
+| `MOCK_EDITION=enterprise` | Reports the `enterprise` edition, for code that still reads it |
 
-It tracks the current Stalwart release rather than 0.16 in general, and each
+It tracks the current mail server release, and each
 behavior is confirmed against a real server before it is copied here — the
 comments say which version and on what date. Where a release changes something
 a client can see, the mock changes with it, and the test that pinned the old
@@ -199,9 +199,8 @@ at build time — nothing writes a version into the tree, and `package.json` sta
 at `0.0.0`. `node scripts/version.mjs` prints it for the current checkout.
 
 The PR number sits after the `+` as build metadata because it records where a
-build came from, not how new it is. The version says nothing about Stalwart on
-purpose: what a build needs from the server is stated in the README badge and
-in [KNOWN-ISSUES.md](KNOWN-ISSUES.md). Building an image with the version on it,
+build came from, not how new it is. The version says nothing about the mail server on
+purpose: the server's own version is its own business. Building an image with the version on it,
 and the single-host `deploy.example.sh`, are covered in
 [Installing](https://docs.ihasmail.org/install/).
 

@@ -72,7 +72,7 @@ async function jmap(ctx: Ctx, methodCalls: Invocation[]): Promise<{ methodRespon
     signal: AbortSignal.timeout(config.upstreamTimeout),
   });
   if (res.status === 401 || res.status === 403) throw new UpstreamError("Invalid credentials", 401);
-  if (!res.ok) throw new UpstreamError(`Stalwart rejected the request (${res.status})`, 502);
+  if (!res.ok) throw new UpstreamError(`The mail server rejected the request (${res.status})`, 502);
   return (await res.json()) as { methodResponses?: [string, unknown, string][] };
 }
 

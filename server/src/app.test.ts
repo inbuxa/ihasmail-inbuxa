@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-process.env.STALWART_URL = "http://127.0.0.1:1";
+process.env.MAIL_SERVER_URL = "http://127.0.0.1:1";
 const { createApp } = await import("./app.js");
 
 test("CSRF guard rejects API POSTs without the custom header", async () => {
@@ -111,7 +111,7 @@ test("only a PDF blob may be framed, and only by us", async () => {
 /*
  * #239: retrying through an outage must not lock somebody out of the recovery.
  *
- * STALWART_URL at the top of this file is 127.0.0.1:1 — nothing listens there,
+ * MAIL_SERVER_URL at the top of this file is 127.0.0.1:1 — nothing listens there,
  * so every sign-in here is the outage case. Before the fix, the eleventh of
  * these came back 429 and stayed 429 for fifteen minutes, outliving whatever
  * had actually been wrong.

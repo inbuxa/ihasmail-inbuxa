@@ -1,114 +1,103 @@
 <p align="center">
-  <img src="web/public/img/logo.png" alt="ihasmail" width="150">
+  <img src="web/public/img/inbuxa-mark.png" alt="" width="110">
 </p>
 
-<p align="center">
-  <strong><a href="https://demo.ihasmail.com">Try the demo</a></strong><br>
-  <sub>A working copy with an invented mailbox behind it — no sign-up, nothing real, nothing kept.</sub>
-</p>
+<h1 align="center">INBUXA webmail</h1>
 
 <p align="center">
   <a href="LICENSE"><img alt="License: AGPL-3.0-or-later" src="https://img.shields.io/badge/license-AGPL--3.0--or--later-2dd4bf?style=flat-square"></a>
-  <a href="https://stalw.art" target="_blank" rel="noreferrer"><img alt="Requires Stalwart 0.16 or newer; tested against 0.16.22" src="https://img.shields.io/badge/Stalwart-0.16.22-6366f1?style=flat-square"></a>
-  <a href="https://docs.ihasmail.org" target="_blank" rel="noreferrer"><img alt="Documentation: docs.ihasmail.org" src="https://img.shields.io/badge/docs-docs.ihasmail.org-0ea5e9?style=flat-square"></a>
-  <a href="https://coffeylabs.org" target="_blank" rel="noreferrer"><img alt="by Coffey Labs" src="https://img.shields.io/badge/by-Coffey%20Labs-0f766e?style=flat-square"></a>
 </p>
 
-# ihasmail
+The webmail of the INBUXA suite: mail, calendars, contacts, files and filters
+in one app that works as well on a phone as on a desktop. It talks only JMAP to
+the INBUXA mail server, and keeps nothing of its own: everything durable,
+settings included, lives on the server, so the container is disposable.
 
-**Immutable webmail for [Stalwart Mail Server](https://stalw.art).** Mail,
-calendars, contacts, files and filters in one app that works as well on a phone
-as on a desktop — and a container with nothing to persist.
-
-ihasmail talks only JMAP to Stalwart. There is no database, no IMAP or SMTP,
-and with `IMMUTABLE=1` no writable filesystem either: everything durable,
-settings included, belongs to Stalwart, so the container is disposable.
-
-| | |
-| --- | --- |
-| 🌐 **[ihasmail.org](https://ihasmail.org)** | What it is, what it looks like, the full feature list |
-| 📘 **[docs.ihasmail.org](https://docs.ihasmail.org)** | [Installing](https://docs.ihasmail.org/install/) · [Configuring](https://docs.ihasmail.org/configure/) · [Using it](https://docs.ihasmail.org/using/) · [Shortcuts](https://docs.ihasmail.org/shortcuts/) · [Rebranding](https://docs.ihasmail.org/rebranding/) · [Troubleshooting](https://docs.ihasmail.org/troubleshooting/) |
-| 📋 **[FEATURES.md](FEATURES.md)** | Everything it does, feature by feature, with the capability each one needs |
-| 🧪 **[KNOWN-ISSUES.md](KNOWN-ISSUES.md)** | What was verified live, and where Stalwart departs from a spec |
-| 🛣 **[ROADMAP.md](ROADMAP.md)** | What ihasmail does not do, and why |
-
-## Screenshots
-
-| | |
-| --- | --- |
-| **Inbox & conversation (dark)** ![Inbox, dark theme](screenshots/inbox-dark.jpg) | **Inbox & conversation (light)** ![Inbox, light theme](screenshots/inbox-light.jpg) |
-| **Composer** ![Composer](screenshots/compose.jpg) | **Calendar** ![Calendar](screenshots/calendar.jpg) |
-| **Contacts** ![Contacts](screenshots/contacts.jpg) | **Sieve filter builder** ![Filters](screenshots/filters.jpg) |
-
-Taken against the built-in mock with sample data. More, including the phone
-layout, on [ihasmail.org](https://ihasmail.org/#screenshots).
+> **Status: in development, not released.**
 
 ## What's in it
 
-- **Mail** — conversations, labels, search operators, keyboard shortcuts, scheduled and undo send, invitations and RSVP, filters made from a message
-- **Calendar** — month, week, day and agenda views, recurrence, attendees and free-busy
-- **Contacts** — address books, groups, vCard import and export
-- **Files** — browse, upload, move, share
-- **Signature checking** — S/MIME signed mail verified as you read it
-- **Settings that follow the account**, kept in the account's own storage on Stalwart
-- **On a phone** — swipe to archive or delete, pull to refresh, hold to select
-- **Administration** — a dashboard, accounts, groups, mailing lists, roles, tenants and domains, each shown only when the Stalwart role allows it
-- **Ten interface languages and twelve themes** — the nine translations are marked Beta until a native speaker has read them
-- **Platform** — installable PWA, Web Push, `mailto:` handler, no credentials in the browser, strict CSP
+- **Mail:** conversations, labels, search operators, keyboard shortcuts,
+  scheduled and undo send, invitations and RSVP, filters made from a message.
+- **Calendar:** month, week, day and agenda views, recurrence, attendees and
+  free-busy.
+- **Contacts:** address books, groups, vCard import and export.
+- **Files:** browse, upload, move, share.
+- **Signature checking:** S/MIME signed mail verified as you read it.
+- **Settings that follow the account**, stored on the mail server.
+- **On a phone:** swipe to archive or delete, pull to refresh, hold to select.
+- **Administration:** a dashboard, accounts, groups, mailing lists, roles,
+  tenants and domains, each shown only to an account whose role allows it.
+  Everything else is in INBUXA Admin.
+- **Sign-in on the mail server's own page**, two-factor included. The webmail
+  never handles a password to sign someone in, and holds only sealed tokens.
+- **Ten interface languages and twelve themes.**
 
-The long version is [FEATURES.md](FEATURES.md) and
-[ihasmail.org](https://ihasmail.org/#features).
+## Configuration
 
-## Requirements
+| Variable | Meaning |
+|---|---|
+| `MAIL_SERVER_URL` | How this webmail reaches the mail server. |
+| `APP_SECRET` | A long random secret for sealing sessions. Required in production. |
+| `OAUTH_CLIENT_SECRET` | Turns on sign-in through the server's page. The secret of the confidential client the server registers for this webmail: on the server, the same value as `INBUXA_WEBMAIL_CLIENT_SECRET`. |
+| `OAUTH_CLIENT_ID` | The client's id. Default `ihasmail-inbuxa`, which is what the server registers. |
+| `PUBLIC_URL` | Where browsers reach the webmail, without `BASE_PATH`. Required with `OAUTH_CLIENT_SECRET`. The redirect URI, `PUBLIC_URL` + `BASE_PATH` + `/api/auth/callback`, must match the server's `INBUXA_WEBMAIL_URL` + `/api/auth/callback` exactly. |
+| `MAIL_SERVERS_FILE` | Optional: several mail servers, picked by the account's domain. See `mail-servers.example.json`. |
+| `ADMIN_URL` | Optional: where INBUXA Admin is, for the dashboard's link. |
+| `APP_NAME` | What the webmail calls itself. Default `INBUXA`, shown as the INBUXA wordmark; any other name shows as text. |
 
-**Stalwart 0.16 or newer** — sign-in refuses anything older, by name. Tested
-against 0.16.22; what changed in each release is in
-[KNOWN-ISSUES.md](KNOWN-ISSUES.md).
+`.env.example` lists the rest.
 
-- **No Stalwart yet?** [ihasmail-oneshot](https://github.com/Coffey-Labs/ihasmail-oneshot) deploys a new Stalwart and ihasmail together on one host, in one command.
-- **On Stalwart 0.15?** [stalwart-migrator](https://github.com/Coffey-Labs/stalwart-migrator) upgrades it in place, or stay on the [`stalwart-0.15-support`](https://github.com/Coffey-Labs/ihasmail/releases/tag/stalwart-0.15-support) release.
+On the mail server, set `INBUXA_WEBMAIL_URL` to the webmail's address (with
+`BASE_PATH`, if any) and `INBUXA_WEBMAIL_CLIENT_SECRET` to the shared secret.
+The server registers the client on start and allows the webmail's origin for
+cross-origin requests.
+
+With one mail server, the sign-in page asks for no address, only whether this
+is the person's own device. The server's page asks for the rest. With several,
+the address comes first, since its domain picks the server.
+
+A password change revokes the server's tokens, so it signs the person out
+everywhere, this session included.
 
 ## Quick start (Docker)
 
 ```bash
 cp .env.example .env
-# edit: STALWART_URL=https://mail.example.com  and  APP_SECRET=$(openssl rand -base64 48)
+# edit: MAIL_SERVER_URL, APP_SECRET, and for server sign-in OAUTH_CLIENT_SECRET and PUBLIC_URL
 docker compose up --build -d
-# → http://localhost:8080 — put a reverse proxy in front for TLS
+# → http://localhost:8080. Put a reverse proxy in front for TLS.
 ```
 
-Or pull the published image, `ghcr.io/coffey-labs/ihasmail`. Releases are
-weekly, so it is usually a few days behind `main`.
+## Source code
 
-People sign in with their Stalwart mailbox credentials. **An account with
-two-factor authentication needs an app password**, created in Stalwart's own
-settings.
-
-Everything else — TLS, running immutably, several Stalwart servers, settings
-the installation decides, every environment variable — is in
-[Installing](https://docs.ihasmail.org/install/) and
-[Configuring](https://docs.ihasmail.org/configure/).
+Every build carries its own source. The sign-in page and Settings › About
+link to `source.tar.gz`, the exact tree the running version was built from,
+uncommitted work included. It's written next to the app at build time and
+named after that tree.
 
 ## Development
 
 ```bash
 npm install
-npm run dev:mock     # built-in mock Stalwart (demo@example.com / demo)
+npm run dev:mock     # the built-in mock mail server (demo@example.com / demo)
 npm test
 ```
+
+The mock also answers OAuth. Start it and the webmail with
+`OAUTH_CLIENT_SECRET=mock-oauth-secret` and a `PUBLIC_URL`, and its sign-in
+page approves the demo user at once.
 
 Architecture, the mock's switches and how versions are numbered are in
 [CONTRIBUTING.md](CONTRIBUTING.md#development-setup).
 
-## Contributing
+## Built on ihasmail
 
-[CONTRIBUTING.md](CONTRIBUTING.md) · [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) ·
-[SECURITY.md](SECURITY.md) — please report vulnerabilities privately.
+The INBUXA webmail is built on [ihasmail](https://github.com/Coffey-Labs/ihasmail),
+Coffey Labs' own webmail, which stays an independent product. The public
+repository is the remote `ihasmail`, fetch-only, and its `main` is merged in to
+keep up. Nothing here is pushed there.
 
 ## License
 
-Copyright (C) 2026 Coffey Labs — AGPL-3.0-or-later. See [LICENSE](LICENSE).
-
-If you run a modified ihasmail, set `SOURCE_URL` to your own repository: the
-sign-in page and Settings › About both show it. See
-[Rebranding](https://docs.ihasmail.org/rebranding/).
+Copyright (C) 2026 Coffey Labs. AGPL-3.0-or-later; see [LICENSE](LICENSE).

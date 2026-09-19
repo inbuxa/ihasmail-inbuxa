@@ -12,7 +12,7 @@ const PORT = 18797;
 process.env.MOCK_PORT = String(PORT);
 process.env.MOCK_USER = "demo@example.com";
 process.env.MOCK_PASS = "demo-password";
-process.env.STALWART_URL = `http://127.0.0.1:${PORT}`;
+process.env.MAIL_SERVER_URL = `http://127.0.0.1:${PORT}`;
 process.env.APP_SECRET = "test-secret-for-account-flows";
 
 const mock = await import("./mock/index.js");

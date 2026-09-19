@@ -50,7 +50,7 @@ export function RolesAdmin({ selectedId }: { selectedId?: string }) {
     let canceled = false;
     Promise.all([loadPermissionList(), loadPermissionCatalog()]).then(
       ([list, catalog]) => !canceled && setEntries(describePermissions(list, catalog, t("General"))),
-      (err) => !canceled && setPermissionsError(t("Stalwart's list of permissions could not be loaded, so permissions can't be changed here. ({reason})", { reason: describeDirectoryError(err, "role") })),
+      (err) => !canceled && setPermissionsError(t("The mail server's list of permissions could not be loaded, so permissions can't be changed here. ({reason})", { reason: describeDirectoryError(err, "role") })),
     );
     return () => {
       canceled = true;

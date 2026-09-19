@@ -3,8 +3,7 @@ import { Eye, EyeOff, LogIn } from "lucide-react";
 import { useSession } from "@/store/session";
 import { ApiError } from "@/jmap/client";
 import { withBase } from "@/lib/basePath";
-import { DEFAULT_SOURCE_URL } from "@/lib/source";
-import { APP_VERSION } from "@/lib/version";
+import { APP_VERSION, SOURCE_ARCHIVE, SOURCE_ID } from "@/lib/version";
 import { DEFAULT_APP_NAME } from "@/lib/brand";
 import { t } from "@/lib/i18n";
 import { InbuxaWordmark } from "@/ui/InbuxaWordmark";
@@ -12,9 +11,9 @@ import { InbuxaWordmark } from "@/ui/InbuxaWordmark";
 export function LoginPage() {
   const login = useSession((s) => s.login);
   // The AGPL's offer has to reach everyone who interacts with the app over the
-  // network, and that includes whoever is looking at this form. The server says
-  // where its own source lives, so a modified deployment points at its own.
-  const [sourceUrl, setSourceUrl] = useState(DEFAULT_SOURCE_URL);
+  // network, and that includes whoever is looking at this form. ihasmail-inbuxa
+  // offers the exact source of this build, which the build writes next to the
+  // app (see SOURCE_ARCHIVE), rather than a repository link that can drift.
   /*
    * What this instance calls itself.
    *
@@ -42,7 +41,6 @@ export function LoginPage() {
       .then((r) => (r.ok ? r.json() : null))
       .then((c) => {
         if (!live || !c) return;
-        if (c.sourceUrl) setSourceUrl(c.sourceUrl as string);
         if (typeof c.appName === "string" && c.appName.trim()) setAppName(c.appName.trim());
         setSignIn(c.signIn === "oauth" ? "oauth" : "password");
         setDirect(c.signIn === "oauth" && c.signInDirect === true);
@@ -157,7 +155,9 @@ export function LoginPage() {
           <br />
           <a href="https://ihasmail.org" target="_blank" rel="noopener noreferrer">{t("ihasmail.org")}</a>
           {" · "}
-          <a href={sourceUrl} target="_blank" rel="noopener noreferrer">{t("AGPL-3.0 source")}</a>
+          <a href={withBase(SOURCE_ARCHIVE)} download>{t("AGPL-3.0 source")}</a>
+          {" "}
+          <span className="notranslate" translate="no">({SOURCE_ID})</span>
         </p>
       </form>
     </div>

@@ -1,15 +1,15 @@
 {
   "_comment": [
-    "Optional: which Stalwart a domain signs in to.",
+    "Optional: which mail server a domain signs in to.",
     "",
-    "STALWART_URL stays required and stays the default. This file only adds",
+    "MAIL_SERVER_URL stays required and stays the default. This file only adds",
     "domains that go somewhere else -- delete it and nothing changes.",
     "",
-    "Point at it with STALWART_SERVERS_FILE=/etc/ihasmail/servers.json and mount",
+    "Point at it with MAIL_SERVERS_FILE=/etc/ihasmail/servers.json and mount",
     "it read-only. Read once at startup, so editing it means restarting.",
     "",
     "A domain that is not listed here, and a bare username with no domain at",
-    "all, go to STALWART_URL. A domain that IS listed never falls back: if its",
+    "all, go to MAIL_SERVER_URL. A domain that IS listed never falls back: if its",
     "server is unreachable that sign-in fails, because falling back would",
     "authenticate somebody against a server their domain was routed away from.",
     "",
@@ -20,10 +20,10 @@
     "ihasmail's Administration dashboard links to each server's own",
     "administration, found from the server. A value may instead be an object",
     "that overrides where it is: {\"url\": ..., \"adminUrl\": ...}.",
-    "STALWART_ADMIN_URL is the same for the default server. A listed domain is",
+    "ADMIN_URL is the same for the default server. A listed domain is",
     "never pointed at the default server's administration.",
     "",
-    "Docs: https://docs.ihasmail.org/configure/#several-stalwart-servers"
+    "Each listed domain signs in to its own server; everything else goes to MAIL_SERVER_URL."
   ],
 
   "example.com": "https://mail.example.com",

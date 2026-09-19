@@ -86,7 +86,7 @@ describe("the role sheet", () => {
   it("warns about a default role and will not delete it", async () => {
     signIn(VIEWER);
     await render(roles.get("user")!, { user: ["user"], group: [], tenant: [], admin: [] });
-    expect(host.textContent).toContain("Stalwart gives this role by default to users");
+    expect(host.textContent).toContain("The mail server gives this role by default to users");
     expect(button(host, "Delete role…")?.disabled).toBe(true);
   });
 });

@@ -19,7 +19,7 @@ writeFileSync(join(root, "assets", "app.js"), script);
 writeFileSync(join(root, "index.html"), `<!doctype html><title>t</title>${"<p>hello</p>".repeat(400)}`);
 
 process.env.STATIC_DIR = root;
-process.env.STALWART_URL = "http://127.0.0.1:1";
+process.env.MAIL_SERVER_URL = "http://127.0.0.1:1";
 const { createApp } = await import("./app.js");
 
 test("an asset is gzipped when the client asks for it", async () => {

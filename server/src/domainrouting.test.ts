@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-process.env.STALWART_URL = "https://default.example";
+process.env.MAIL_SERVER_URL = "https://default.example";
 
 const { upstreamFor } = await import("./upstream.js");
 const { config } = await import("./config.js");
@@ -9,7 +9,7 @@ const { config } = await import("./config.js");
 /**
  * Which Stalwart a username goes to (#238).
  *
- * `STALWART_URL` is required and is the default. The mapping only adds domains
+ * `MAIL_SERVER_URL` is required and is the default. The mapping only adds domains
  * that go elsewhere, so an installation with no mapping behaves exactly as it
  * always has -- which is what these first cases pin.
  */

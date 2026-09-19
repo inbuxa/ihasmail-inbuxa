@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createServer, request as httpRequest, type IncomingMessage, type Server } from "node:http";
 import { AddressInfo } from "node:net";
 
-process.env.STALWART_URL = "http://127.0.0.1:1";
+process.env.MAIL_SERVER_URL = "http://127.0.0.1:1";
 process.env.APP_SECRET = "test-secret-for-image-proxy";
 
 const { fetchPinned, isPrivateAddress } = await import("./imageproxy.js");

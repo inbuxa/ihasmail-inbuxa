@@ -521,7 +521,7 @@ export function createApp(basePath = config.basePath): Hono<Env> {
           {
             error: "unsupported_server",
             message:
-              "Your credentials are fine, but this mail server is older than Stalwart 0.16, which ihasmail needs. Upgrade the server, or run the release tagged stalwart-0.15-support.",
+              "Your credentials are fine, but this mail server isn't one this webmail supports.",
           },
           501,
         );
@@ -564,7 +564,7 @@ export function createApp(basePath = config.basePath): Hono<Env> {
           {
             error: "totp_unsupported",
             message:
-              "This mail server does not accept two-factor codes from webmail. Sign in with an app password instead — create one in Stalwart's own settings, under app passwords. Your password and code are probably fine.",
+              "This mail server does not accept two-factor codes from this form. Sign in with an app password instead. Your password and code are probably fine.",
           },
           401,
         );
@@ -629,7 +629,7 @@ export function createApp(basePath = config.basePath): Hono<Env> {
   const accountCtx = async (c: Context<Env>) => {
     const session = c.get("session");
     // The account's own server. Without it, the first fetch after the cached
-    // session expires goes to STALWART_URL -- which, for a domain mapped
+    // session expires goes to MAIL_SERVER_URL -- which, for a domain mapped
     // elsewhere, either refuses the password or knows a different account by
     // the same name (#238).
     const upstream = await getUpstreamSession(session.id, session.authorization, upstreamFor(session.username));

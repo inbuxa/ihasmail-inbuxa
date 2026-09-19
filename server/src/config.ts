@@ -57,7 +57,7 @@ if (!appSecret || appSecret === "change-me") {
   );
 }
 
-const stalwartUrl = env("STALWART_URL", "https://mail.example.com").replace(/\/+$/, "");
+const stalwartUrl = env("MAIL_SERVER_URL", "https://mail.example.com").replace(/\/+$/, "");
 
 /**
  * Declares that this instance is running as an immutable container: read-only
@@ -190,7 +190,7 @@ function readSettingsPolicy(): { defaults: Record<string, unknown>; enforced: Re
 /**
  * Which Stalwart a domain signs in to.
  *
- * `STALWART_URL` stays required and stays the default; this only adds domains
+ * `MAIL_SERVER_URL` stays required and stays the default; this only adds domains
  * that go somewhere else (#238). An installation that sets nothing behaves
  * exactly as it always has.
  *
@@ -203,15 +203,15 @@ function readSettingsPolicy(): { defaults: Record<string, unknown>; enforced: Re
  * one is unreachable is a sign-in question, answered in #239.
  */
 function readStalwartServers(): { urls: Record<string, string>; adminUrls: Record<string, string> } {
-  const file = process.env.STALWART_SERVERS_FILE;
+  const file = process.env.MAIL_SERVERS_FILE;
   if (!file) return { urls: {}, adminUrls: {} };
-  if (!existsSync(file)) throw new Error(`STALWART_SERVERS_FILE does not exist: ${file}`);
+  if (!existsSync(file)) throw new Error(`MAIL_SERVERS_FILE does not exist: ${file}`);
 
   let raw: unknown;
   try {
     raw = JSON.parse(readFileSync(file, "utf8"));
   } catch (err) {
-    throw new Error(`Invalid STALWART_SERVERS_FILE (${file}): ${(err as Error).message}`);
+    throw new Error(`Invalid MAIL_SERVERS_FILE (${file}): ${(err as Error).message}`);
   }
   return parseStalwartServers(raw, file);
 }
@@ -219,7 +219,7 @@ function readStalwartServers(): { urls: Record<string, string>; adminUrls: Recor
 /** The servers file's contents, checked. Exported so the shipped example is tested by the parser that reads it. */
 export function parseStalwartServers(raw: unknown, file: string): { urls: Record<string, string>; adminUrls: Record<string, string> } {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-    throw new Error(`Invalid STALWART_SERVERS_FILE (${file}): expected an object of domain to URL`);
+    throw new Error(`Invalid MAIL_SERVERS_FILE (${file}): expected an object of domain to URL`);
   }
 
   const out: Record<string, string> = {};
@@ -233,16 +233,16 @@ export function parseStalwartServers(raw: unknown, file: string): { urls: Record
        taken off a username will arrive and comparing them any other way means
        a mapping that silently never matches. */
     const domain = rawDomain.trim().toLowerCase().replace(/\.$/, "");
-    if (!domain) throw new Error(`Invalid STALWART_SERVERS_FILE (${file}): a domain key is empty`);
-    if (domain in out) throw new Error(`Invalid STALWART_SERVERS_FILE (${file}): "${domain}" appears twice once normalized`);
+    if (!domain) throw new Error(`Invalid MAIL_SERVERS_FILE (${file}): a domain key is empty`);
+    if (domain in out) throw new Error(`Invalid MAIL_SERVERS_FILE (${file}): "${domain}" appears twice once normalized`);
     /* A domain's value is its server's URL, or an object that also names where
        that server's own administration is: `{"url": …, "adminUrl": …}`. */
     const value = rawValue && typeof rawValue === "object" && !Array.isArray(rawValue) ? (rawValue as Record<string, unknown>) : { url: rawValue };
-    if (typeof value.url !== "string") throw new Error(`Invalid STALWART_SERVERS_FILE (${file}): "${domain}" is not a URL`);
-    out[domain] = httpUrl(value.url, `STALWART_SERVERS_FILE (${file}): "${domain}"`);
+    if (typeof value.url !== "string") throw new Error(`Invalid MAIL_SERVERS_FILE (${file}): "${domain}" is not a URL`);
+    out[domain] = httpUrl(value.url, `MAIL_SERVERS_FILE (${file}): "${domain}"`);
     if (value.adminUrl !== undefined) {
-      if (typeof value.adminUrl !== "string") throw new Error(`Invalid STALWART_SERVERS_FILE (${file}): "${domain}" adminUrl is not a URL`);
-      adminUrls[domain] = httpUrl(value.adminUrl, `STALWART_SERVERS_FILE (${file}): "${domain}" adminUrl`);
+      if (typeof value.adminUrl !== "string") throw new Error(`Invalid MAIL_SERVERS_FILE (${file}): "${domain}" adminUrl is not a URL`);
+      adminUrls[domain] = httpUrl(value.adminUrl, `MAIL_SERVERS_FILE (${file}): "${domain}" adminUrl`);
     }
   }
   return { urls: out, adminUrls };
@@ -314,12 +314,12 @@ export const config = {
   stalwartServers: stalwartServers.urls,
   /**
    * Where an administrator reaches Stalwart's own administration, for the
-   * pointer on ihasmail's dashboard. Optional, and separate from STALWART_URL,
+   * pointer on ihasmail's dashboard. Optional, and separate from MAIL_SERVER_URL,
    * which is how *this server* reaches Stalwart -- often an address no browser
    * can open. Unset, the dashboard names Stalwart's administration without a
    * link. A domain routed elsewhere takes its server's `adminUrl` instead.
    */
-  stalwartAdminUrl: process.env.STALWART_ADMIN_URL ? httpUrl(process.env.STALWART_ADMIN_URL, "STALWART_ADMIN_URL") : "",
+  stalwartAdminUrl: process.env.ADMIN_URL ? httpUrl(process.env.ADMIN_URL, "ADMIN_URL") : "",
   stalwartAdminUrls: stalwartServers.adminUrls,
   /**
    * Say that an Enterprise-only section is Enterprise-only even on an
@@ -385,7 +385,7 @@ export const config = {
   /* See relayPushRaw(): pipe the push stream socket-to-socket instead of through fetch(). */
   rawPushRelay: process.env.RAW_PUSH_RELAY !== "0",
   /* See absoluteUpstream(): follow Stalwart's advertised origin instead of pinning to ours. */
-  followAdvertisedUrls: process.env.STALWART_FOLLOW_ADVERTISED_URLS === "1",
+  followAdvertisedUrls: process.env.MAIL_SERVER_FOLLOW_ADVERTISED_URLS === "1",
 };
 
 export type Config = typeof config;

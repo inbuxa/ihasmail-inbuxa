@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-process.env.STALWART_URL = "http://127.0.0.1:1";
+process.env.MAIL_SERVER_URL = "http://127.0.0.1:1";
 const { createApp } = await import("./app.js");
 
 /**

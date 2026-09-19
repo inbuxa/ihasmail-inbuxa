@@ -14,16 +14,16 @@ writeFileSync(
     "Linked.Test.": { url: "https://mail.linked.test", adminUrl: "https://admin.linked.test/" },
   }),
 );
-process.env.STALWART_URL = "https://default.example";
-process.env.STALWART_ADMIN_URL = "https://admin.default.example/";
-process.env.STALWART_SERVERS_FILE = file;
+process.env.MAIL_SERVER_URL = "https://default.example";
+process.env.ADMIN_URL = "https://admin.default.example/";
+process.env.MAIL_SERVERS_FILE = file;
 
 const { adminPrefixFrom, adminUrlFor, advertisedOrigin, upstreamFor } = await import("./upstream.js");
 const { config, parseStalwartServers } = await import("./config.js");
 
 /**
- * Where the dashboard's "Open Stalwart admin" points. STALWART_URL is how this
- * server reaches Stalwart; STALWART_ADMIN_URL is where a browser opens its
+ * Where the dashboard's "Open Stalwart admin" points. MAIL_SERVER_URL is how this
+ * server reaches Stalwart; ADMIN_URL is where a browser opens its
  * administration, and follows the same domain routing.
  */
 test("a servers file entry may name its administration as well as its server, and a note is not a domain", () => {
@@ -67,7 +67,7 @@ test("the origin is the one Stalwart advertises, even when it is reached on a pr
 });
 
 test("the shipped example loads through the parser that reads it", () => {
-  const example = new URL("../../stalwart-servers.example.json", import.meta.url);
+  const example = new URL("../../mail-servers.example.json", import.meta.url);
   const parsed = parseStalwartServers(JSON.parse(readFileSync(example, "utf8")), "example");
   assert.ok(Object.keys(parsed.urls).length > 0);
   assert.ok(!("_comment" in parsed.urls));

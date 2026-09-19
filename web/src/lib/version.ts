@@ -6,3 +6,10 @@
  * parts are what they are.
  */
 export const APP_VERSION = __IHASMAIL_VERSION__;
+
+/**
+ * ihasmail-inbuxa: the source this build was made from, which the build writes
+ * next to the app as `source.tar.gz`. The AGPL's offer links there.
+ */
+export const SOURCE_ID = __SOURCE_ID__;
+export const SOURCE_ARCHIVE = "/source.tar.gz";

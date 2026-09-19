@@ -1,7 +1,6 @@
 import { useSession } from "@/store/session";
 import { client } from "@/jmap/client";
-import { DEFAULT_SOURCE_URL } from "@/lib/source";
-import { APP_VERSION } from "@/lib/version";
+import { APP_VERSION, SOURCE_ARCHIVE, SOURCE_ID } from "@/lib/version";
 import { withBase } from "@/lib/basePath";
 import { t, tNode } from "@/lib/i18n";
 import { InbuxaWordmark } from "@/ui/InbuxaWordmark";
@@ -9,8 +8,7 @@ import { InbuxaWordmark } from "@/ui/InbuxaWordmark";
 export function AboutSettings() {
   const session = useSession((s) => s.session);
   const caps = Object.keys(session?.capabilities ?? {});
-  // A deployment running modified code should offer its own source, not ours.
-  const sourceUrl = session?.ihasmail?.sourceUrl ?? DEFAULT_SOURCE_URL;
+  // The exact source of this build, written next to the app by the build.
   return (
     <div>
       {/* ihasmail-inbuxa: INBUXA's webmail, built on ihasmail, whose version
@@ -23,7 +21,7 @@ export function AboutSettings() {
           <InbuxaWordmark height={26} />
           {/* A product name and a version string: neither is a word to translate. */}
           <div style={{ fontWeight: 700 }} className="notranslate" translate="no">ihasmail v{APP_VERSION}</div>
-          <div className="hint">{tNode("AGPL-3.0-or-later · {source}", { source: <a href={sourceUrl} target="_blank" rel="noreferrer">{sourceUrl.replace(/^https?:\/\//, "")}</a> })}</div>
+          <div className="hint">{tNode("AGPL-3.0-or-later · {source}", { source: <a href={withBase(SOURCE_ARCHIVE)} download className="notranslate" translate="no">source.tar.gz ({SOURCE_ID})</a> })}</div>
         </div>
       </div>
       <h2>{t("Server")}</h2>
@@ -36,8 +34,8 @@ export function AboutSettings() {
           <tr><td>{t("Image privacy proxy")}</td><td>{session?.ihasmail?.imageProxy ? t("enabled") : t("disabled")}</td></tr>
         </tbody>
       </table>
-      <p className="hint" style={{ marginTop: 6 }}>{t("Stalwart does not publish its version number to mail clients, so ihasmail reports the edition where the server gives one. ihasmail requires 0.16 or newer, and sign-in refuses anything older.")}</p>
-      <p className="hint">{tNode("ihasmail's own version is the date of the commit it was built from, followed by where that commit came from: {example} was built from a commit dated the 30th of August 2026 that arrived through pull request 129. A commit that did not come through one carries its short SHA instead — {sha}. The version deliberately says nothing about Stalwart; what this build needs from the server is the line above.", { example: <strong className="notranslate" translate="no">v2026.8.30+pr129</strong>, sha: <code>+g1fa6578</code> })}</p>
+      <p className="hint" style={{ marginTop: 6 }}>{t("This webmail works with the INBUXA mail server, and sign-in refuses a server that doesn't offer what it needs.")}</p>
+      <p className="hint">{tNode("ihasmail's own version is the date of the commit it was built from, followed by where that commit came from: {example} was built from a commit dated the 30th of August 2026 that arrived through pull request 129. A commit that did not come through one carries its short SHA instead — {sha}. The version deliberately says nothing about the mail server; what this build needs from the server is the line above.", { example: <strong className="notranslate" translate="no">v2026.8.30+pr129</strong>, sha: <code>+g1fa6578</code> })}</p>
       <h2>{t("Server capabilities")}</h2>
       <div className="row wrap gap-4">
         {caps.map((c) => <span key={c} className="chip mono" style={{ fontSize: ".78em" }}>{c.replace("urn:ietf:params:jmap:", "")}</span>)}

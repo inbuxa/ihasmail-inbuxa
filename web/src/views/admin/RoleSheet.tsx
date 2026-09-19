@@ -153,7 +153,7 @@ export function RoleSheet({ role, roles, defaults, entries, permissionsError, on
         {!creating && !locked && !can(perms, "Role", "Update") && <p className="admin-notice">{t("Your role lets you view roles but not change them.")}</p>}
         {kinds.length > 0 && (
           <p className="admin-notice warn">
-            <span>{t("Stalwart gives this role by default to {kinds}. A change here reaches everyone who has it that way.", { kinds: kinds.join(", ") })}</span>
+            <span>{t("The mail server gives this role by default to {kinds}. A change here reaches everyone who has it that way.", { kinds: kinds.join(", ") })}</span>
           </p>
         )}
 
@@ -186,7 +186,7 @@ export function RoleSheet({ role, roles, defaults, entries, permissionsError, on
         {!creating && can(perms, "Role", "Destroy") && (
           <DeleteRole
             role={role}
-            blocked={kinds.length ? t("Stalwart gives this role by default, so it can't be deleted. Change the defaults in Stalwart's own administration first.") : locked ? t("This role carries permissions yours doesn't.") : null}
+            blocked={kinds.length ? t("The mail server gives this role by default, so it can't be deleted. Change the defaults in INBUXA Admin first.") : locked ? t("This role carries permissions yours doesn't.") : null}
             onDeleted={onDeleted}
           />
         )}

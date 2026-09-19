@@ -26,7 +26,7 @@ writeFileSync(join(root, "index.html"), "<!doctype html><title>t</title>");
 writeFileSync(join(root, "img.png"), "not really a png");
 
 process.env.STATIC_DIR = root;
-process.env.STALWART_URL = "http://127.0.0.1:1";
+process.env.MAIL_SERVER_URL = "http://127.0.0.1:1";
 const { createApp } = await import("./app.js");
 
 const cacheControl = async (path: string) => {
