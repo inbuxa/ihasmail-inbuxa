@@ -151,9 +151,10 @@ export function LoginPage() {
             One <p> with a break rather than two: .foot carries a 20px
             margin-top, which a second paragraph would repeat as a gap.
           */}
-          <span className="notranslate" translate="no">ihasmail v{APP_VERSION}</span>
+          {/* ihasmail-inbuxa: this build is INBUXA's webmail, and its site is INBUXA's. */}
+          <span className="notranslate" translate="no">INBUXA webmail v{APP_VERSION}</span>
           <br />
-          <a href="https://ihasmail.org" target="_blank" rel="noopener noreferrer">{t("ihasmail.org")}</a>
+          <a href="https://inbuxa.org" target="_blank" rel="noopener noreferrer" className="notranslate" translate="no">inbuxa.org</a>
           {" · "}
           <a href={withBase(SOURCE_ARCHIVE)} target="_blank" rel="noopener noreferrer">{t("AGPL-3.0 source")}</a>
           {" "}

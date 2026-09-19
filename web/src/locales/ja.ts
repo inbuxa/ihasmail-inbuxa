@@ -828,6 +828,8 @@ export const catalog: Catalog = {
     "Default mail app": "既定のメールアプリ",
     "Documentation": "ドキュメント",
     "About ihasmail": "ihasmail について",
+    "About INBUXA": "INBUXA について",
+    "Built on {ihasmail}": "{ihasmail} をベースに構築",
     "About": "情報",
     "Server": "サーバー",
     "Server capabilities": "サーバーの機能",

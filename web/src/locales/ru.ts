@@ -831,6 +831,8 @@ export const catalog: Catalog = {
     "Default mail app": "Почтовая программа по умолчанию",
     "Documentation": "Документация",
     "About ihasmail": "О программе ihasmail",
+    "About INBUXA": "О программе INBUXA",
+    "Built on {ihasmail}": "Основано на {ihasmail}",
     "About": "О программе",
     "Server": "Сервер",
     "Server capabilities": "Возможности сервера",

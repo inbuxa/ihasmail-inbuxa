@@ -11,8 +11,8 @@ export function AboutSettings() {
   // The exact source of this build, written next to the app by the build.
   return (
     <div>
-      {/* ihasmail-inbuxa: INBUXA's webmail, built on ihasmail, whose version
-          and source stay here as its credit and the AGPL's offer. */}
+      {/* ihasmail-inbuxa: INBUXA's webmail, built on ihasmail. The version and
+          source are this build's, the AGPL's offer; ihasmail keeps its credit. */}
       <h1>{t("About INBUXA webmail")}</h1>
       <p className="lead">{tNode("A fast, friendly, open-source webmail for {server}, built on JMAP.", { server: <span className="notranslate" translate="no">INBUXA</span> })}</p>
       <div className="row" style={{ gap: 16, alignItems: "center", marginBottom: 16 }}>
@@ -20,7 +20,8 @@ export function AboutSettings() {
         <div>
           <InbuxaWordmark height={26} />
           {/* A product name and a version string: neither is a word to translate. */}
-          <div style={{ fontWeight: 700 }} className="notranslate" translate="no">ihasmail v{APP_VERSION}</div>
+          <div style={{ fontWeight: 700 }} className="notranslate" translate="no">INBUXA webmail v{APP_VERSION}</div>
+          <div className="hint">{tNode("Built on {ihasmail}", { ihasmail: <a href="https://ihasmail.org" target="_blank" rel="noopener noreferrer" className="notranslate" translate="no">ihasmail</a> })}</div>
           <div className="hint">{tNode("AGPL-3.0-or-later · {source}", { source: <a href={withBase(SOURCE_ARCHIVE)} target="_blank" rel="noopener noreferrer" className="notranslate" translate="no">source.tar.gz ({SOURCE_ID})</a> })}</div>
         </div>
       </div>

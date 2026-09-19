@@ -7,7 +7,7 @@ async function main() {
   const app = createApp();
   const server = serve({ fetch: app.fetch, hostname: config.host, port: config.port }, (info) => {
     console.log(`[ihasmail] ${config.appName} listening on http://${info.address}:${info.port}`);
-    console.log(`[ihasmail] upstream Stalwart: ${config.stalwartUrl}`);
+    console.log(`[ihasmail] mail server: ${config.stalwartUrl}`);
     console.log(`[ihasmail] static dir: ${config.staticDir}`);
   });
 

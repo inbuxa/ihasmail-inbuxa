@@ -827,6 +827,8 @@ export const catalog: Catalog = {
     "Default mail app": "默认邮件应用",
     "Documentation": "文档",
     "About ihasmail": "关于 ihasmail",
+    "About INBUXA": "关于 INBUXA",
+    "Built on {ihasmail}": "基于 {ihasmail} 构建",
     "About": "关于",
     "Server": "服务器",
     "Server capabilities": "服务器功能",
