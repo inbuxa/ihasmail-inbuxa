@@ -12,6 +12,12 @@
 name: Weekly release
 
 on:
+  # inbuxa: the weekly schedule is off in this fork until INBUXA releases.
+  # Public ihasmail cuts one a week because it has users expecting it; this
+  # fork has none yet, and a scheduled release here would publish an image
+  # and mail everyone watching about a product that has not shipped. Cut one
+  # by hand with workflow_dispatch; restore the weekly one at release by
+  # removing the `if:` on the `check` job below.
   schedule:
     # Mondays, 09:17 UTC. GitHub runs scheduled jobs on a best-effort basis and
     # can delay a run by a good while when the queue is busy, so do not read
@@ -43,6 +49,9 @@ concurrency:
 
 jobs:
   check:
+    # inbuxa: scheduled runs stop here until INBUXA releases; a run started by
+    # hand goes through. Remove this line to let the weekly one resume.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -63,7 +63,11 @@ env:
   # Hardcoded rather than derived from github.repository: a registry path must
   # be lowercase and the owner is spelled `Coffey-Labs`, so deriving it means
   # remembering to lowercase it. This is the string the docs already name.
-  IMAGE: ghcr.io/coffey-labs/ihasmail
+  # inbuxa: this fork publishes to INBUXA's own path. Inherited from public
+  # ihasmail, which publishes ghcr.io/coffey-labs/ihasmail -- leaving that
+  # here would push INBUXA's webmail over the image every public ihasmail
+  # install pulls, which SPEC.md 5 exists to prevent.
+  IMAGE: ghcr.io/inbuxa/ihasmail-inbuxa
 
 jobs:
   # The version is worked out once and handed to both builds, so the two
