@@ -69,10 +69,13 @@ docker compose up --build -d
 
 ## Source code
 
-Every build carries its own source. The sign-in page and Settings › About
-link to `source.tar.gz`, the exact tree the running version was built from,
-uncommitted work included. It's written next to the app at build time and
-named after that tree.
+INBUXA webmail is a modified ihasmail, so the AGPL's offer is this fork:
+<https://github.com/inbuxa/ihasmail-inbuxa>. The sign-in page and Settings ›
+About link there, beside the version, which names the commit the running build
+came from.
+
+Run your own patched build and that offer becomes yours, not ours: point
+`SOURCE_URL` at your tree and both links follow it.
 
 ## Development
 
