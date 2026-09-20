@@ -13,8 +13,6 @@ in one app that works as well on a phone as on a desktop. It talks only JMAP to
 the INBUXA mail server, and keeps nothing of its own: everything durable,
 settings included, lives on the server, so the container is disposable.
 
-> **Status: in development, not released.**
-
 ## What's in it
 
 - **Mail:** conversations, labels, search operators, keyboard shortcuts,
