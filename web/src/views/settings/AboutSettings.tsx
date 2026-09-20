@@ -1,7 +1,8 @@
 import { useSession } from "@/store/session";
 import { useAppName } from "@/lib/brand";
 import { client } from "@/jmap/client";
-import { APP_VERSION, SOURCE_ARCHIVE, SOURCE_ID } from "@/lib/version";
+import { APP_VERSION } from "@/lib/version";
+import { DEFAULT_SOURCE_URL } from "@/lib/source";
 import { withBase } from "@/lib/basePath";
 import { t, tNode } from "@/lib/i18n";
 import { InbuxaWordmark } from "@/ui/InbuxaWordmark";
@@ -10,7 +11,8 @@ export function AboutSettings() {
   const appName = useAppName();
   const session = useSession((s) => s.session);
   const caps = Object.keys(session?.capabilities ?? {});
-  // The exact source of this build, written next to the app by the build.
+  // A deployment running modified code should offer its own source, not ours.
+  const sourceUrl = session?.ihasmail?.sourceUrl ?? DEFAULT_SOURCE_URL;
   return (
     <div>
       {/* ihasmail-inbuxa: INBUXA's webmail, built on ihasmail. The version and
@@ -26,7 +28,7 @@ export function AboutSettings() {
           {/* A product name and a version string: neither is a word to translate. */}
           <div style={{ fontWeight: 700 }} className="notranslate" translate="no">{appName} webmail v{APP_VERSION}</div>
           <div className="hint">{tNode("Built on {project}", { project: <a href="https://ihasmail.org" target="_blank" rel="noopener noreferrer" className="notranslate" translate="no">ihasmail</a> })}</div>
-          <div className="hint">{tNode("AGPL-3.0-or-later · {source}", { source: <a href={withBase(SOURCE_ARCHIVE)} target="_blank" rel="noopener noreferrer" className="notranslate" translate="no">source.tar.gz ({SOURCE_ID})</a> })}</div>
+          <div className="hint">{tNode("AGPL-3.0-or-later · {source}", { source: <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="notranslate" translate="no">{sourceUrl.replace(/^https?:\/\//, "")}</a> })}</div>
         </div>
       </div>
       <h2>{t("Server")}</h2>

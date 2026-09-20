@@ -3,30 +3,10 @@ import react from "@vitejs/plugin-react";
 import { fileURLToPath, URL } from "node:url";
 import { resolveVersion } from "../scripts/version.mjs";
 import { baseUrlOf } from "../scripts/basePath.mjs";
-import { sourceIdentity, writeSourceArchive } from "../scripts/source-archive.mjs";
 
 // Resolved here, at build time: the browser has no git to ask, and neither does
 // the Docker build, which is handed the answer as IHASMAIL_VERSION instead.
 const version = resolveVersion();
-
-/*
- * ihasmail-inbuxa: the AGPL's offer for this build. The whole project's source
- * (web and server), exactly as built, goes into dist/source.tar.gz, and its
- * identity into the app so the download link can name it. See
- * scripts/source-archive.mjs.
- */
-const projectRoot = fileURLToPath(new URL("..", import.meta.url));
-const source = sourceIdentity(projectRoot);
-
-function sourceArchive(): Plugin {
-  return {
-    name: "inbuxa-source-archive",
-    apply: "build",
-    closeBundle() {
-      writeSourceArchive(projectRoot, fileURLToPath(new URL("./dist/source.tar.gz", import.meta.url)), "ihasmail-inbuxa", source);
-    },
-  };
-}
 
 /*
  * Where the app is mounted. Unlike everything else ihasmail is told, this one
@@ -79,8 +59,8 @@ function assetList(): Plugin {
 
 export default defineConfig({
   base,
-  plugins: [react(), assetList(), sourceArchive()],
-  define: { __IHASMAIL_VERSION__: JSON.stringify(version), __SOURCE_ID__: JSON.stringify(source.id) },
+  plugins: [react(), assetList()],
+  define: { __IHASMAIL_VERSION__: JSON.stringify(version) },
   resolve: {
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },

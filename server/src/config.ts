@@ -292,9 +292,10 @@ export const config = {
    *
    * The AGPL asks whoever *runs* a modified version to offer that version's
    * source, not the one it was forked from -- so anyone deploying a patched
-   * ihasmail should point this at their own tree.
+   * ihasmail should point this at their own tree. ihasmail-inbuxa is itself
+   * such a tree, so the default is INBUXA's fork.
    */
-  sourceUrl: env("SOURCE_URL", "https://github.com/Coffey-Labs/ihasmail"),
+  sourceUrl: env("SOURCE_URL", "https://github.com/inbuxa/ihasmail-inbuxa"),
   host: env("HOST", "0.0.0.0"),
   port: int("PORT", 8080),
   /**

@@ -6,5 +6,3 @@
  * `scripts/version.mjs`.
  */
 declare const __IHASMAIL_VERSION__: string;
-/** ihasmail-inbuxa: the identity of the source this build was made from (scripts/source-archive.mjs). */
-declare const __SOURCE_ID__: string;
