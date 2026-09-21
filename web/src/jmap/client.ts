@@ -22,6 +22,21 @@ export const CAP = {
 /** Stalwart's own capability, which carries its `x:` registry methods. */
 export const STALWART_CAP = "urn:stalwart:jmap";
 
+/** INBUXA's own capability (contract C-1), on the signed-in account. */
+export const INBUXA_CAP = "urn:inbuxa:jmap";
+
+/**
+ * Whether legacy mail protocols -- IMAP, POP3, ManageSieve, sending from mail
+ * apps -- are off for this account: the stricter of the server's switch and
+ * its organization's, as the server reports it (legacy-protocols LP-19). Any
+ * server that doesn't say reads as on.
+ */
+export function legacyProtocolsOff(session: JmapSession | null, accountId: Id | null): boolean {
+  if (!session || !accountId) return false;
+  const cap = session.accounts[accountId]?.accountCapabilities?.[INBUXA_CAP] as { legacyProtocols?: string } | undefined;
+  return cap?.legacyProtocols === "disabled";
+}
+
 export class JmapMethodError extends Error {
   constructor(
     public readonly method: string,

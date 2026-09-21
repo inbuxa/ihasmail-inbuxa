@@ -930,6 +930,7 @@ export const catalog: Catalog = {
     "Turn off two-factor authentication": "Desactivar la autenticación en dos pasos",
     "Your password alone will be enough to sign in again.": "Su contraseña por sí sola bastará para volver a iniciar sesión.",
     "App passwords": "Contraseñas de aplicación",
+    "Your organization allows only {app} and JMAP apps, so phone and desktop mail apps can't connect to this account.": "Su organización solo permite {app} y aplicaciones JMAP, así que las aplicaciones de correo del teléfono y del ordenador no pueden conectarse a esta cuenta.",
     "New app password for": "Contraseña de aplicación nueva para",
     "Your new app password": "Su contraseña de aplicación nueva",
     "Secret": "Secreto",
