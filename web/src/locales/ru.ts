@@ -933,6 +933,7 @@ export const catalog: Catalog = {
     "Turn off two-factor authentication": "Отключить двухфакторную аутентификацию",
     "Your password alone will be enough to sign in again.": "Для входа снова будет достаточно одного пароля.",
     "App passwords": "Пароли приложений",
+    "Your organization allows only {app} and JMAP apps, so phone and desktop mail apps can't connect to this account.": "Ваша организация разрешает только {app} и приложения JMAP, поэтому почтовые приложения на телефоне и компьютере не могут подключиться к этой учётной записи.",
     "New app password for": "Новый пароль приложения для",
     "Your new app password": "Ваш новый пароль приложения",
     "Secret": "Секрет",

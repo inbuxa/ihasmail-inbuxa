@@ -929,6 +929,7 @@ export const catalog: Catalog = {
     "Turn off two-factor authentication": "关闭两步验证",
     "Your password alone will be enough to sign in again.": "之后仅凭密码即可重新登录。",
     "App passwords": "应用专用密码",
+    "Your organization allows only {app} and JMAP apps, so phone and desktop mail apps can't connect to this account.": "您的组织只允许使用 {app} 和 JMAP 应用，因此手机和电脑上的邮件应用无法连接到此账户。",
     "New app password for": "新建应用专用密码，用于",
     "Your new app password": "您的新应用专用密码",
     "Secret": "密钥",

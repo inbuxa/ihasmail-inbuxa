@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAppName } from "@/lib/brand";
 import { Copy, KeyRound, ShieldCheck, Smartphone } from "lucide-react";
-import { apiFetch, ApiError } from "@/jmap/client";
+import { apiFetch, ApiError, legacyProtocolsOff } from "@/jmap/client";
 import { useSession } from "@/store/session";
 import { formatFullDate } from "@/lib/format";
 import { toast } from "@/ui/toast";
@@ -39,7 +39,9 @@ export function SecuritySettings() {
   /** Set when the server has no self-service API at all (a proxy, say). */
   const [unsupported, setUnsupported] = useState<string | null>(null);
   const session = useSession((s) => s.session);
+  const accountId = useSession((s) => s.accountId);
   const logout = useSession((s) => s.logout);
+  const appName = useAppName();
 
   const load = () => apiFetch<{ current: string; sessions: SessionRow[] }>("/api/auth/sessions").then((r) => { setRows(r.sessions); setCurrent(r.current); }).catch(() => setRows([]));
 
@@ -82,6 +84,11 @@ export function SecuritySettings() {
       )}
 
       <h2>{t("App passwords")}</h2>
+      {legacyProtocolsOff(session, accountId) && (
+        <p className="info-box mb-16">
+          {t("Your organization allows only {app} and JMAP apps, so phone and desktop mail apps can't connect to this account.", { app: appName })}
+        </p>
+      )}
       {unsupported ? (
         <p className="hint">{t("App passwords are managed by your mail administrator.")}</p>
       ) : (

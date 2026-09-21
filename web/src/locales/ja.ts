@@ -930,6 +930,7 @@ export const catalog: Catalog = {
     "Turn off two-factor authentication": "2 段階認証をオフにする",
     "Your password alone will be enough to sign in again.": "以後はパスワードだけでサインインできるようになります。",
     "App passwords": "アプリパスワード",
+    "Your organization allows only {app} and JMAP apps, so phone and desktop mail apps can't connect to this account.": "組織では {app} と JMAP アプリのみが許可されているため、スマートフォンやパソコンのメールアプリはこのアカウントに接続できません。",
     "New app password for": "アプリパスワードの用途",
     "Your new app password": "新しいアプリパスワード",
     "Secret": "シークレット",
