@@ -1726,6 +1726,12 @@ select optgroup { background-color: var(--bg-elev); color: var(--fg); }
 .admin-notice { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--bg-sunken); color: var(--fg-muted); font-size: .92em; margin: 8px 0; }
 .admin-notice svg { flex: none; margin-top: 2px; }
 .admin-notice.warn { background: var(--warn-soft); color: var(--fg); }
+/* INBUXA: a tenant's legacy mail protocols switch (legacy-protocols LP-15 to LP-17) */
+.admin-legacy-confirm { display: grid; gap: 12px; margin-top: 12px; }
+.admin-legacy-box { padding: 10px 12px; border-radius: var(--radius-sm); background: var(--bg-sunken); font-size: .92em; }
+.admin-legacy-box.warn { background: var(--warn-soft); color: var(--fg); }
+.admin-legacy-box p { margin: 0 0 6px; }
+.admin-legacy-box ul { margin: 6px 0; padding-left: 18px; }
 .admin-notice.warn svg { color: var(--warn); }
 .admin-notice.error { background: var(--danger-soft); color: var(--fg); }
 .admin-sheet { position: absolute; top: 0; right: 0; bottom: 0; width: min(460px, 100%); z-index: 20; display: flex; flex-direction: column; background: var(--bg-elev); border-left: 1px solid var(--border); box-shadow: var(--shadow-3); animation: admin-sheet-in .18s var(--ease); }
