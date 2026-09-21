@@ -27,6 +27,7 @@ import { Dialog } from "@/ui/dialog";
 import { Spinner } from "@/ui/misc";
 import { toast } from "@/ui/toast";
 import { usePermissions } from "./usePermissions";
+import { TenantLegacyProtocols } from "./TenantLegacyProtocols";
 
 const GIB = 1024 ** 3;
 
@@ -203,6 +204,8 @@ export function TenantSheet({ tenant, roles, onClose, onChanged, onCreated, onDe
 
             <h3>{t("Domains")}</h3>
             <TenantDomains tenant={tenant} canChange={can(perms, "Domain", "Update")} onChanged={() => { setRevision((n) => n + 1); onChanged(); }} />
+
+            <TenantLegacyProtocols tenantId={tenant.id} tenantName={tenant.name} />
           </>
         )}
 

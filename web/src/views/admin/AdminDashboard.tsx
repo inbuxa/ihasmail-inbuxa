@@ -1,6 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "wouter";
-import { ArrowDownToLine, ArrowUpFromLine, ExternalLink, Globe, Hourglass, LayoutDashboard, MemoryStick, RefreshCw, Users } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, ExternalLink, Globe, Hourglass, LayoutDashboard, MemoryStick, RefreshCw, ShieldCheck, Users } from "lucide-react";
+import { legacyProtocolsOff } from "@/jmap/client";
+import { useAppName } from "@/lib/brand";
 import { adminSections, dashboardCards, type DashboardCard } from "@/lib/admin/adminAccess";
 import { balancedColumns, countObjects, DASHBOARD_WINDOW_MS, isRefused, loadMetrics, summarizeMetrics, type MessageStats } from "@/lib/admin/adminDashboard";
 import { formatDayMonthTime, resolvedLocale } from "@/lib/datetime";
@@ -35,6 +37,8 @@ async function settle<T>(work: Promise<T>): Promise<Loaded<T>> {
 export function AdminDashboard() {
   const perms = usePermissions();
   const adminUrl = useSession((s) => s.session?.ihasmail?.server?.adminUrl ?? null);
+  const legacyOff = useSession((s) => legacyProtocolsOff(s.session, s.accountId));
+  const app = useAppName();
   const cards = dashboardCards(perms);
   const sections = adminSections(perms);
   const [reload, setReload] = useState(0);
@@ -102,6 +106,13 @@ export function AdminDashboard() {
           <RefreshCw size={18} />
         </button>
       </div>
+      {legacyOff && (
+        // INBUXA legacy-protocols LP-18: while it's off for the organization
+        <p className="admin-notice">
+          <ShieldCheck size={16} />
+          <span>{t("Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.", { app })}</span>
+        </p>
+      )}
       {shown.length ? (
         <div className="admin-cards-wrap">
           <div className="admin-cards">
