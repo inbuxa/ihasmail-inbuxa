@@ -1,7 +1,14 @@
 # CI for the self-hosted GitLab that replaced GitHub Actions when the account
-# was suspended on 2026-09-20. This is a port of .github/workflows/ci.yml and
-# publish.yml, which are kept in the tree for reference and for the day the
-# appeal succeeds.
+# was suspended on 2026-09-20. This is a port of .github/workflows/ci.yml,
+# kept in the tree for reference and for the day the appeal succeeds.
+#
+# There is deliberately no publish job, although publish.yml is in the tree.
+# Every tag in this repository is one of ihasmail's own upstream tags, the same
+# commits, and at those tags publish.yml pushed to ihasmail's image, not an
+# INBUXA one. A tag-driven publish here would ship plain ihasmail under the
+# INBUXA name the moment upstream tags reached this project -- which happened
+# once, by hand, and was deleted. Add one back only with a release scheme that
+# produces tags this repository alone has.
 #
 # Every `image:` here is pinned to a digest, with the tag it belonged to in the
 # trailing comment. That is the direct replacement for the SHA-pinned `uses:`
@@ -15,12 +22,9 @@
 # https://git.coffeylabs.org -- that name is Cloudflare-proxied on the Free
 # plan, which caps request bodies at 100 MB and would break artifact uploads.
 
-stages: [test, build, publish]
+stages: [test, build]
 
 variables:
-  # Jobs talk to the registry directly on its DNS-only name, never through the
-  # proxy, for the same 100 MB reason.
-  IMAGE: $CI_REGISTRY_IMAGE
   GIT_DEPTH: "0"
 
 default:
@@ -85,63 +89,3 @@ docker-build:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-
-# ------------------------------------------------------------- publish ------
-# Tag-driven, replacing the release -> publish workflow_call chain. GitHub
-# needed that dance because a release cut with GITHUB_TOKEN raises no event;
-# GitLab has no such rule, so a tag pipeline is enough.
-#
-# arm64 is built under QEMU on this amd64 host, not on a native runner as
-# GitHub's free `ubuntu-24.04-arm` did. It is slow -- tens of minutes for the
-# npm install and Vite build through instruction translation -- which is
-# tolerable for a weekly tag and would not be for every push. That is why this
-# job is tag-only. If arm64 ever starts timing out, the fix is an arm64 runner,
-# not dropping the platform: TrueNAS and Unraid users pull it.
-# The version the image is built with, computed the way publish.yml did it:
-# scripts/version.mjs, which needs node and the full history. The build is
-# *told* the real form (IHASMAIL_VERSION, what About and /api/health report);
-# the Docker tag gets the same string with '+' turned into '-', because a tag
-# may not contain '+'. The first port of this job left the build arg out, so
-# a tag would have shipped an image reporting itself unversioned -- which is
-# exactly what version.test.ts calls looking wrong.
-version:
-  stage: build
-  image: node:26-bookworm-slim@sha256:582460f614631b59b824ac6020533b9bf339c7fdf3a6d7db31abb6b4065f0212 # 26-bookworm-slim
-  variables:
-    GIT_DEPTH: "0"
-  before_script:
-    - apt-get update -qq && apt-get install -y -qq --no-install-recommends git >/dev/null
-  script:
-    - V="$(node scripts/version.mjs)"
-    - echo "VERSION=$V" > version.env
-    - echo "DOCKER_TAG=${V/+/-}" >> version.env
-    - cat version.env
-  artifacts:
-    reports:
-      dotenv: version.env
-  rules:
-    - if: $CI_COMMIT_TAG
-
-publish:
-  stage: publish
-  image: docker:28-cli@sha256:625d9431a9f54c5a2bc90f24f0e1c3d55b1349fd857dd85035f98c2c9acbdd4d # 28-cli
-  needs: [node, version]
-  variables:
-    DOCKER_BUILDKIT: "1"
-  before_script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-    - docker run --privileged --rm tonistiigi/binfmt --install arm64
-    - docker buildx create --use --name ci-builder --driver docker-container || docker buildx use ci-builder
-  script:
-    - |
-      docker buildx build \
-        --platform linux/amd64,linux/arm64 \
-        --build-arg IHASMAIL_VERSION="$VERSION" \
-        --provenance=false --sbom=false \
-        --tag "$IMAGE:$DOCKER_TAG" \
-        --tag "$IMAGE:latest" \
-        --push .
-  after_script:
-    - docker logout "$CI_REGISTRY" || true
-  rules:
-    - if: $CI_COMMIT_TAG
