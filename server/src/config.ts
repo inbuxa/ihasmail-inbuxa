@@ -278,7 +278,7 @@ if (oauthClientSecret && !publicUrl) {
 
 export const config = {
   isProd,
-  appName: env("APP_NAME", "INBUXA"),
+  appName: env("APP_NAME", "inbuxa"),
   settingsPolicy: readSettingsPolicy(),
   /**
    * What this build calls itself: `2.16.57`. Set by the image build from

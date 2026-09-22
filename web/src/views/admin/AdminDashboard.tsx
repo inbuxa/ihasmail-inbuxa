@@ -126,12 +126,12 @@ export function AdminDashboard() {
           more numbers will be: this is a glance, and operating the server is
           Stalwart's own administration. The link is the operator's to give. */}
       <p className="hint admin-dashboard-note">
-        {t("Detailed metrics, the delivery queue, logs and server settings are in INBUXA Admin.")}
+        {t("Detailed metrics, the delivery queue, logs and server settings are in inbuxa Admin.")}
         {adminUrl && (
           <>
             {" "}
             <a href={adminUrl} target="_blank" rel="noopener noreferrer">
-              {t("Open INBUXA Admin")} <ExternalLink size={13} aria-hidden="true" />
+              {t("Open inbuxa Admin")} <ExternalLink size={13} aria-hidden="true" />
             </a>
           </>
         )}

@@ -15,7 +15,7 @@ export function InbuxaWordmark({ className, height }: { className?: string; heig
       height={height}
       width={(height * 488) / 112}
       role="img"
-      aria-label="INBUXA"
+      aria-label="inbuxa"
       className={`notranslate ${className ?? ""}`}
       fill="currentColor"
     >
