@@ -2,14 +2,15 @@
 # GitLab (2026-09-22). Gitea reads .gitea/workflows and ignores .github/ once
 # this directory exists; .github/workflows stays as it was for GitHub.
 #
-# There is deliberately no publish job, although publish.yml is in the tree.
-# Every tag in this repository is one of ihasmail's own upstream tags, the
-# same commits, and at those tags publish.yml pushed to ihasmail's image, not
-# an INBUXA one. A tag-driven publish here would ship plain ihasmail under the
-# INBUXA name the moment upstream tags reached this project -- which happened
-# once, by hand, and was deleted. Add one back only with a release scheme that
-# produces tags this repository alone has.
-#
+# Releases are cut by pushing a tag named `inbuxa-v<version>`, where
+# <version> is what scripts/version.mjs says for the tagged commit with the
+# `+` turned into `-` (e.g. inbuxa-v2026.9.22-g1a2b3c4). The prefix matters:
+# this repository carries upstream ihasmail's own `v...` tags, on commits it
+# shares with upstream, and a publish keyed on `v*` would ship plain ihasmail
+# under the INBUXA name the moment one arrived. Only `inbuxa-v` tags publish.
+# A tag publishes only if it names its own commit's version and that commit is
+# on main. There is no release schedule yet; tags are cut by hand.
+
 # Every job runs in an image pinned by digest (tag in the trailing comment),
 # and the only action used is coffey-labs/actions/checkout pinned by SHA. The
 # instance resolves short `uses:` against itself, never GitHub, so nothing
@@ -85,3 +86,94 @@ jobs:
           tag="ihasmail:ci-$(echo "$GITHUB_SHA" | cut -c1-8)"
           docker build -t "$tag" .
           docker image rm "$tag"
+
+  # ----------------------------------------------------------- release ------
+  # Only for `inbuxa-v` tags (see the top of this file). The tag has to name
+  # its own commit's version, so the image, the release and the About screen
+  # all agree, and the commit has to be on main, so a release never describes
+  # code that was not reviewed onto the default branch.
+  version:
+    if: ${{ startsWith(github.ref, 'refs/tags/inbuxa-v') }}
+    runs-on: light
+    container:
+      image: node:26-bookworm-slim@sha256:582460f614631b59b824ac6020533b9bf339c7fdf3a6d7db31abb6b4065f0212 # 26-bookworm-slim
+    outputs:
+      version: ${{ steps.v.outputs.VERSION }}
+      docker_tag: ${{ steps.v.outputs.DOCKER_TAG }}
+    steps:
+      - uses: coffey-labs/actions/checkout@fab0c4d45e0162963965f1555df27b7bed5e20ec
+        with:
+          fetch-depth: 0
+      - id: v
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          V="$(node scripts/version.mjs)"
+          want="inbuxa-v${V/+/-}"
+          [ "$TAG" = "$want" ] || { echo "!! $TAG does not name this commit's version; expected $want"; exit 1; }
+          git merge-base --is-ancestor "$(git rev-parse "${TAG}^{commit}")" origin/main \
+            || { echo "!! $TAG is not on main"; exit 1; }
+          echo "VERSION=$V" >> "$GITHUB_OUTPUT"
+          echo "DOCKER_TAG=${V/+/-}" >> "$GITHUB_OUTPUT"
+          echo "VERSION=$V DOCKER_TAG=${V/+/-}"
+
+  # Multi-arch image at <REGISTRY>/inbuxa/ihasmail-inbuxa, then the release.
+  # arm64 is built under QEMU on this amd64 host, which is slow but fine for
+  # a hand-cut release. PACKAGE_TOKEN (jcoffey-dev, write:package) logs in:
+  # the job's own token is refused by the container registry. The release is
+  # created last, so a release on the page always has its image behind it.
+  publish:
+    if: ${{ startsWith(github.ref, 'refs/tags/inbuxa-v') }}
+    needs: [node, version]
+    runs-on: docker
+    container:
+      image: docker:28-cli@sha256:625d9431a9f54c5a2bc90f24f0e1c3d55b1349fd857dd85035f98c2c9acbdd4d # 28-cli
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    env:
+      DOCKER_BUILDKIT: "1"
+      REGISTRY: ${{ vars.REGISTRY }}
+      IMAGE: ${{ vars.REGISTRY }}/${{ github.repository }}
+      VERSION: ${{ needs.version.outputs.version }}
+      DOCKER_TAG: ${{ needs.version.outputs.docker_tag }}
+      PACKAGE_TOKEN: ${{ secrets.PACKAGE_TOKEN }}
+    steps:
+      - uses: coffey-labs/actions/checkout@fab0c4d45e0162963965f1555df27b7bed5e20ec
+      - run: |
+          test -n "$REGISTRY" && test -n "$VERSION" && test -n "$DOCKER_TAG"
+          test -n "$PACKAGE_TOKEN" || { echo "PACKAGE_TOKEN secret is not set on this repository" >&2; exit 1; }
+          echo "$PACKAGE_TOKEN" | docker login -u jcoffey-dev --password-stdin "$REGISTRY"
+          docker run --privileged --rm tonistiigi/binfmt --install arm64
+          docker buildx create --use --name gitea-builder --driver docker-container || docker buildx use gitea-builder
+      - run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --build-arg IHASMAIL_VERSION="$VERSION" \
+            --provenance=false --sbom=false \
+            --tag "$IMAGE:$DOCKER_TAG" \
+            --tag "$IMAGE:latest" \
+            --push .
+          docker buildx imagetools inspect "$IMAGE:$DOCKER_TAG"
+      # Show the package on the repository's Packages tab. Idempotent.
+      - run: |
+          apk add --no-cache -q curl
+          curl -fsS -o /dev/null -X POST -H "Authorization: token $PACKAGE_TOKEN" \
+            "$CI_SERVER_INTERNAL/api/v1/packages/${GITHUB_REPOSITORY%%/*}/container/${GITHUB_REPOSITORY#*/}/-/link/${GITHUB_REPOSITORY#*/}" \
+            || echo "package already linked (or link refused); not fatal"
+      # The release, on the internal address. The job's own token may create
+      # releases; a tag it creates would not start a workflow, but this one
+      # already exists.
+      - env:
+          TAG: ${{ github.ref_name }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eu
+          body="INBUXA webmail $VERSION.\n\nImage: \`$IMAGE:$DOCKER_TAG\` (linux/amd64, linux/arm64), also tagged \`latest\`."
+          curl -fsS -o /dev/null -H "Authorization: token $TOKEN" -H "Content-Type: application/json" \
+            --data "{\"tag_name\":\"$TAG\",\"name\":\"$TAG\",\"body\":\"$body\"}" \
+            "$CI_SERVER_INTERNAL/api/v1/repos/$GITHUB_REPOSITORY/releases"
+          echo "release $TAG created"
+      - if: always()
+        run: docker logout "$REGISTRY" || true
