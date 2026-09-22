@@ -35,13 +35,13 @@ export function AboutSettings() {
       <table className="sessions-table">
         <tbody>
           <tr><td>{t("Signed in as")}</td><td>{session?.username}</td></tr>
-          <tr><td>{t("Mail server")}</td><td className="notranslate" translate="no">INBUXA</td></tr>
+          <tr><td>{t("Mail server")}</td><td className="notranslate" translate="no">inbuxa</td></tr>
           <tr><td>{t("Accounts")}</td><td>{Object.values(session?.accounts ?? {}).map((a) => a.name).join(", ")}</td></tr>
           <tr><td>{t("Max upload")}</td><td>{t("{size} MB", { size: Math.round(client.maxSizeUpload / 1048576) })}</td></tr>
           <tr><td>{t("Image privacy proxy")}</td><td>{session?.ihasmail?.imageProxy ? t("enabled") : t("disabled")}</td></tr>
         </tbody>
       </table>
-      <p className="hint" style={{ marginTop: 6 }}>{t("This webmail works with the INBUXA mail server, and sign-in refuses a server that doesn't offer what it needs.")}</p>
+      <p className="hint" style={{ marginTop: 6 }}>{t("This webmail works with the inbuxa mail server, and sign-in refuses a server that doesn't offer what it needs.")}</p>
       <p className="hint">{tNode("{app}'s own version is the date of the commit it was built from, followed by where that commit came from: {example} was built from a commit dated the 30th of August 2026 that arrived through pull request 129. A commit that did not come through one carries its short SHA instead — {sha}. The version deliberately says nothing about the mail server; what this build needs from the server is the line above.", { example: <strong className="notranslate" translate="no">v2026.8.30+pr129</strong>, sha: <code>+g1fa6578</code> }, { app: appName })}</p>
       <h2>{t("Server capabilities")}</h2>
       <div className="row wrap gap-4">

@@ -12,9 +12,9 @@ import { useSession } from "@/store/session";
  * One constant rather than the string written out at each of them, because
  * three copies of a default is how two of them end up stale.
  */
-// ihasmail-inbuxa: INBUXA's webmail goes by INBUXA, so it can't be taken for
+// ihasmail-inbuxa: inbuxa's webmail goes by inbuxa, so it can't be taken for
 // public ihasmail. APP_NAME still names a deployment whatever it likes.
-export const DEFAULT_APP_NAME = "INBUXA";
+export const DEFAULT_APP_NAME = "inbuxa";
 /**
  * What this instance calls itself, right now.
  *

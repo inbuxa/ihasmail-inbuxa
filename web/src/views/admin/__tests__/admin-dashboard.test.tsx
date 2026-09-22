@@ -112,7 +112,7 @@ describe("the Administration dashboard", () => {
   });
 });
 
-describe("the pointer to INBUXA Admin", () => {
+describe("the pointer to inbuxa Admin", () => {
   let host: HTMLDivElement;
   let root: Root;
   beforeEach(() => {
@@ -136,7 +136,7 @@ describe("the pointer to INBUXA Admin", () => {
   it("names it, and links it where the operator has said where it is", async () => {
     await renderWith("https://admin.example.com");
     const note = host.querySelector(".admin-dashboard-note")!;
-    expect(note.textContent).toContain("INBUXA Admin");
+    expect(note.textContent).toContain("inbuxa Admin");
     const link = note.querySelector("a")!;
     expect(link.getAttribute("href")).toBe("https://admin.example.com");
     expect(link.getAttribute("rel")).toBe("noopener noreferrer");
@@ -144,7 +144,7 @@ describe("the pointer to INBUXA Admin", () => {
 
   it("names it without a link where nobody has", async () => {
     await renderWith(null);
-    expect(host.querySelector(".admin-dashboard-note")?.textContent).toContain("INBUXA Admin");
+    expect(host.querySelector(".admin-dashboard-note")?.textContent).toContain("inbuxa Admin");
     expect(host.querySelector(".admin-dashboard-note a")).toBeNull();
   });
 });

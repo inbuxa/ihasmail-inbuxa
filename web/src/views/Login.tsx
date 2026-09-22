@@ -153,7 +153,7 @@ export function LoginPage() {
             margin-top, which a second paragraph would repeat as a gap.
           */}
           {/* ihasmail-inbuxa: this build is INBUXA's webmail, and its site is INBUXA's. */}
-          <span className="notranslate" translate="no">INBUXA webmail v{APP_VERSION}</span>
+          <span className="notranslate" translate="no">inbuxa webmail v{APP_VERSION}</span>
           <br />
           <a href="https://inbuxa.org" target="_blank" rel="noopener noreferrer" className="notranslate" translate="no">inbuxa.org</a>
           {" · "}

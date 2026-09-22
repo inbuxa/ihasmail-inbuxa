@@ -186,7 +186,7 @@ export function RoleSheet({ role, roles, defaults, entries, permissionsError, on
         {!creating && can(perms, "Role", "Destroy") && (
           <DeleteRole
             role={role}
-            blocked={kinds.length ? t("The mail server gives this role by default, so it can't be deleted. Change the defaults in INBUXA Admin first.") : locked ? t("This role carries permissions yours doesn't.") : null}
+            blocked={kinds.length ? t("The mail server gives this role by default, so it can't be deleted. Change the defaults in inbuxa Admin first.") : locked ? t("This role carries permissions yours doesn't.") : null}
             onDeleted={onDeleted}
           />
         )}
