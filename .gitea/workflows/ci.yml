@@ -1,0 +1,87 @@
+# CI on the self-hosted Gitea, ported from .gitlab-ci.yml during the move off
+# GitLab (2026-09-22). Gitea reads .gitea/workflows and ignores .github/ once
+# this directory exists; .github/workflows stays as it was for GitHub.
+#
+# There is deliberately no publish job, although publish.yml is in the tree.
+# Every tag in this repository is one of ihasmail's own upstream tags, the
+# same commits, and at those tags publish.yml pushed to ihasmail's image, not
+# an INBUXA one. A tag-driven publish here would ship plain ihasmail under the
+# INBUXA name the moment upstream tags reached this project -- which happened
+# once, by hand, and was deleted. Add one back only with a release scheme that
+# produces tags this repository alone has.
+#
+# Every job runs in an image pinned by digest (tag in the trailing comment),
+# and the only action used is coffey-labs/actions/checkout pinned by SHA. The
+# instance resolves short `uses:` against itself, never GitHub, so nothing
+# unreviewed can be pulled in. Read the comment for the version; the digest is
+# what runs. Do not "simplify" one back to a bare tag.
+#
+# Jobs run on the runner's `ci-net` network and clone from Gitea's internal
+# address, never through the Cloudflare-proxied public name, which caps
+# request bodies at 100 MB.
+name: ci
+
+on:
+  push:
+    branches: [main]
+    tags: ['**']
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # -------------------------------------------------------------- test ------
+  node:
+    runs-on: docker
+    container:
+      image: node:26-bookworm-slim@sha256:582460f614631b59b824ac6020533b9bf339c7fdf3a6d7db31abb6b4065f0212 # 26-bookworm-slim
+    env:
+      NPM_CONFIG_CACHE: ${{ github.workspace }}/.npm
+    steps:
+      # version.test.ts shells out to git to resolve a build version, and the
+      # slim image ships without it; the checkout action installs it when it
+      # is missing, so it is there for the tests too. Full history, because
+      # the version is computed from it.
+      - uses: coffey-labs/actions/checkout@fab0c4d45e0162963965f1555df27b7bed5e20ec
+        with:
+          fetch-depth: 0
+      # config.test.ts chmods a directory to 0555 and expects the write to be
+      # refused. Root ignores the permission bits, so as root that assertion
+      # can never hold. The tests run as the image's unprivileged `node` user
+      # for that reason; -p keeps the environment.
+      #
+      # imageproxy.test.ts needs IPv6 as well, which is not set here but on the
+      # runner: jobs run on the `ci-net` docker network, created with --ipv6.
+      # Without a non-loopback IPv6 address on the container, getaddrinfo's
+      # AI_ADDRCONFIG drops ::1 from the results entirely, localhost resolves
+      # to IPv4 only, and the test's control case connects to a port nothing
+      # is listening on. That is a runner property, so it cannot be fixed from
+      # this file -- if these tests ever fail again with ECONNREFUSED on
+      # 127.0.0.1, check that the runner still puts jobs on an IPv6-enabled
+      # network.
+      - run: chown -R node:node "$GITHUB_WORKSPACE"
+      - run: su node -p -c "npm ci --ignore-scripts"
+      - run: su node -p -c "npm run typecheck"
+      - run: su node -p -c "npm test"
+      - run: su node -p -c "npm run build"
+
+  # ------------------------------------------------------------- build ------
+  # Proves the Dockerfile still builds on every change, without pushing. The
+  # equivalent of ci.yml's final `docker build -t ihasmail:ci .` step. The
+  # Dockerfile builds everything itself; `needs` only keeps the order.
+  docker-build:
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+    needs: [node]
+    runs-on: docker
+    container:
+      image: docker:28-cli@sha256:625d9431a9f54c5a2bc90f24f0e1c3d55b1349fd857dd85035f98c2c9acbdd4d # 28-cli
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    steps:
+      - uses: coffey-labs/actions/checkout@fab0c4d45e0162963965f1555df27b7bed5e20ec
+      - run: |
+          tag="ihasmail:ci-$(echo "$GITHUB_SHA" | cut -c1-8)"
+          docker build -t "$tag" .
+          docker image rm "$tag"
