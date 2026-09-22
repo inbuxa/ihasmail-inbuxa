@@ -295,7 +295,7 @@ export const config = {
    * ihasmail should point this at their own tree. ihasmail-inbuxa is itself
    * such a tree, so the default is INBUXA's fork.
    */
-  sourceUrl: env("SOURCE_URL", "https://github.com/inbuxa/ihasmail-inbuxa"),
+  sourceUrl: env("SOURCE_URL", "https://git.coffeylabs.org/inbuxa/ihasmail-inbuxa"),
   host: env("HOST", "0.0.0.0"),
   port: int("PORT", 8080),
   /**
