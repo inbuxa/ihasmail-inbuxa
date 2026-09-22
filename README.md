@@ -70,7 +70,7 @@ docker compose up --build -d
 ## Source code
 
 INBUXA webmail is a modified ihasmail, so the AGPL's offer is this fork:
-<https://github.com/inbuxa/ihasmail-inbuxa>. The sign-in page and Settings ›
+<https://git.coffeylabs.org/inbuxa/ihasmail-inbuxa>. The sign-in page and Settings ›
 About link there, beside the version, which names the commit the running build
 came from.
 
@@ -94,7 +94,7 @@ Architecture, the mock's switches and how versions are numbered are in
 
 ## Built on ihasmail
 
-The INBUXA webmail is built on [ihasmail](https://github.com/Coffey-Labs/ihasmail),
+The INBUXA webmail is built on [ihasmail](https://git.coffeylabs.org/coffey-labs/ihasmail),
 Coffey Labs' own webmail, which stays an independent product. The public
 repository is the remote `ihasmail`, fetch-only, and its `main` is merged in to
 keep up. Nothing here is pushed there.
