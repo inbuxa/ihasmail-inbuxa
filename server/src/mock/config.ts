@@ -5,7 +5,7 @@ export const PERMISSION_SNAPSHOT = (JSON.parse(readFileSync(new URL("../../../we
 
 export const PORT = Number(process.env.MOCK_PORT ?? 8788);
 /**
- * Omit `urn:stalwart:jmap` from the session, so a sign-in can be tested
+ * Omit `urn:inbuxa:jmap:registry` from the session, so a sign-in can be tested
  * against a server ihasmail does not support. This is only that: the rest of
  * the mock still behaves like 0.16. Emulating 0.15 properly went with the
  * support for it.

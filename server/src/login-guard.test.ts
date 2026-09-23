@@ -18,7 +18,7 @@ const PORT = 18799;
 process.env.MOCK_PORT = String(PORT);
 process.env.MOCK_USER = "demo@example.com";
 process.env.MOCK_PASS = "demo-password";
-process.env.MOCK_NO_REGISTRY = "1"; // a server without urn:stalwart:jmap
+process.env.MOCK_NO_REGISTRY = "1"; // a server without urn:inbuxa:jmap:registry
 process.env.MAIL_SERVER_URL = `http://127.0.0.1:${PORT}`;
 process.env.APP_SECRET = "test-secret-for-login-guard";
 

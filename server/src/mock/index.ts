@@ -60,8 +60,8 @@ const session = () => ({
    * the only way this stays honest about what can be inferred from a
    * capability, which is nothing.
    */
-  accounts: { [SHARED_ACCOUNT]: { name: "grace@example.org", isPersonal: false, isReadOnly: false, accountCapabilities: SHARED_CAPS }, [ACCOUNT]: { name: USER, isPersonal: true, isReadOnly: false, accountCapabilities: { "urn:ietf:params:jmap:mail": {}, "urn:ietf:params:jmap:submission": { maxDelayedSend: MAX_DELAYED_SEND, submissionExtensions: { FUTURERELEASE: [], SIZE: [], DSN: [], DELIVERYBY: [], "MT-PRIORITY": ["MIXER"], REQUIRETLS: [] } }, "urn:ietf:params:jmap:vacationresponse": {}, "urn:ietf:params:jmap:sieve": {}, "urn:ietf:params:jmap:calendars": {}, "urn:ietf:params:jmap:contacts": {}, "urn:ietf:params:jmap:principals": {}, "urn:ietf:params:jmap:quota": {}, "urn:ietf:params:jmap:filenode": {}, ...(NO_REGISTRY ? {} : { "urn:stalwart:jmap": {} }) } } },
-  primaryAccounts: { ...Object.fromEntries(["mail", "submission", "vacationresponse", "sieve", "calendars", "contacts", "principals", "quota", "filenode", "blob"].map((c) => [`urn:ietf:params:jmap:${c}`, ACCOUNT])), ...(NO_REGISTRY ? {} : { "urn:stalwart:jmap": ACCOUNT }) },
+  accounts: { [SHARED_ACCOUNT]: { name: "grace@example.org", isPersonal: false, isReadOnly: false, accountCapabilities: SHARED_CAPS }, [ACCOUNT]: { name: USER, isPersonal: true, isReadOnly: false, accountCapabilities: { "urn:ietf:params:jmap:mail": {}, "urn:ietf:params:jmap:submission": { maxDelayedSend: MAX_DELAYED_SEND, submissionExtensions: { FUTURERELEASE: [], SIZE: [], DSN: [], DELIVERYBY: [], "MT-PRIORITY": ["MIXER"], REQUIRETLS: [] } }, "urn:ietf:params:jmap:vacationresponse": {}, "urn:ietf:params:jmap:sieve": {}, "urn:ietf:params:jmap:calendars": {}, "urn:ietf:params:jmap:contacts": {}, "urn:ietf:params:jmap:principals": {}, "urn:ietf:params:jmap:quota": {}, "urn:ietf:params:jmap:filenode": {}, ...(NO_REGISTRY ? {} : { "urn:inbuxa:jmap:registry": {} }) } } },
+  primaryAccounts: { ...Object.fromEntries(["mail", "submission", "vacationresponse", "sieve", "calendars", "contacts", "principals", "quota", "filenode", "blob"].map((c) => [`urn:ietf:params:jmap:${c}`, ACCOUNT])), ...(NO_REGISTRY ? {} : { "urn:inbuxa:jmap:registry": ACCOUNT }) },
   username: USER,
   apiUrl: `http://127.0.0.1:${PORT}/jmap/`,
   downloadUrl: `http://127.0.0.1:${PORT}/jmap/download/{accountId}/{blobId}/{name}?accept={type}`,
@@ -103,7 +103,7 @@ export const server = createServer(async (req, res) => {
     // call that wanted it - which is why an over-eager `using` is so damaging.
     // Stalwart decides this by parsing the urn, not by looking it up in the
     // session, so a capability it hands out per-account is still usable here:
-    // `urn:stalwart:jmap` never appears in the session-level capabilities and
+    // `urn:inbuxa:jmap:registry` never appears in the session-level capabilities and
     // the registry calls that name it work all the same.
     const known = new Set([...Object.keys(session().capabilities), ...Object.keys(session().accounts[ACCOUNT]?.accountCapabilities ?? {})]);
     const unknown = (body.using ?? []).find((u) => !known.has(u));

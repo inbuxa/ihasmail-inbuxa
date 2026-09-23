@@ -12,7 +12,7 @@ import { generateSecret, otpauthUrl, parseOtpauthUrl, verifyTotp } from "./totp.
  * the registry is known to be there.
  */
 
-const STALWART_CAP = "urn:stalwart:jmap";
+const STALWART_CAP = "urn:inbuxa:jmap:registry";
 const JMAP_CORE = "urn:ietf:params:jmap:core";
 /** Stalwart's id for a singleton object; the number it encodes spells this. */
 const SINGLETON = "singleton";

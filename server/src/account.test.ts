@@ -47,7 +47,7 @@ after(() => {
 });
 
 /**
- * Stalwart advertises `urn:stalwart:jmap` only per-account, never in the
+ * Stalwart advertises `urn:inbuxa:jmap:registry` only per-account, never in the
  * session-level capabilities. Looking for it at the top level alone reported
  * every real 0.16 server as older than 0.16 — and now that the same check
  * decides whether a sign-in is allowed at all, that mistake would lock
@@ -57,8 +57,8 @@ test("the session is accepted on a server that advertises the registry per-accou
   const res = await call("/api/auth/session");
   assert.equal(res.status, 200);
   assert.equal(res.body.ihasmail.server.edition, "oss");
-  assert.equal(res.body.capabilities["urn:stalwart:jmap"], undefined, "not where a client would first look");
-  assert.ok("urn:stalwart:jmap" in res.body.primaryAccounts, "but here, as on a real server");
+  assert.equal(res.body.capabilities["urn:inbuxa:jmap:registry"], undefined, "not where a client would first look");
+  assert.ok("urn:inbuxa:jmap:registry" in res.body.primaryAccounts, "but here, as on a real server");
 });
 
 test("the registry reports an account with nothing set up yet", async () => {

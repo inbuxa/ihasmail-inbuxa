@@ -178,14 +178,14 @@ export function forgetUpstreamSession(sessionId: string): void {
 /* Account locale                                                      */
 /* ------------------------------------------------------------------ */
 
-const STALWART_CAP = "urn:stalwart:jmap";
+const STALWART_CAP = "urn:inbuxa:jmap:registry";
 const JMAP_CORE = "urn:ietf:params:jmap:core";
 
 /**
  * Whether this server has Stalwart's JMAP registry — the `x:` objects that
  * carry credentials, account settings and the newer FileNode shape.
  *
- * `urn:stalwart:jmap` is the marker, but **not** in the session-level
+ * `urn:inbuxa:jmap:registry` is the marker, but **not** in the session-level
  * `capabilities`, which is where a JMAP client would naturally look. Stalwart
  * builds that list from a fixed set that has never included this capability;
  * it hands it out per-account instead, so it turns up in `primaryAccounts` and

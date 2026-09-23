@@ -44,7 +44,7 @@ test("locales that carry no language are dropped, not passed through", () => {
 
 test("a server without the registry is not asked for anything", async () => {
   // Sign-in refuses these, so getAccountInfo should never reach the wire for
-  // one - and must not, since a server that cannot parse `urn:stalwart:jmap`
+  // one - and must not, since a server that cannot parse `urn:inbuxa:jmap:registry`
   // fails the whole request rather than the one call.
   const session = { capabilities: { "urn:ietf:params:jmap:core": {}, "urn:ietf:params:jmap:mail": {} }, accounts: {}, primaryAccounts: {} };
   const info = await getAccountInfo("session-unsupported", "Basic x", session as never);
@@ -57,7 +57,7 @@ test("no capabilities at all is treated the same way", async () => {
 });
 
 /**
- * Where Stalwart actually advertises `urn:stalwart:jmap`.
+ * Where Stalwart actually advertises `urn:inbuxa:jmap:registry`.
  *
  * Not in the session-level `capabilities`: `Session::new` builds those from a
  * fixed list that has never carried this capability, in any 0.16.x. It is
@@ -70,7 +70,7 @@ test("no capabilities at all is treated the same way", async () => {
  * This check now decides whether a sign-in is allowed at all, so getting it
  * wrong would lock every user out of a perfectly good server.
  */
-const STALWART = "urn:stalwart:jmap";
+const STALWART = "urn:inbuxa:jmap:registry";
 const baseCaps = { "urn:ietf:params:jmap:core": {}, "urn:ietf:params:jmap:mail": {} };
 
 test("a 0.16 server is recognized from primaryAccounts, where it advertises itself", () => {
