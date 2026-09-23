@@ -15,7 +15,7 @@ const HELPDESK = ["sysAccountGet", "sysAccountQuery", "sysAccountUpdate"];
 
 function signIn(permissions: string[], username = "sam@example.com") {
   useSession.setState({
-    session: { capabilities: {}, accounts: {}, primaryAccounts: { "urn:stalwart:jmap": "self" }, username, ihasmail: { permissions } } as unknown as JmapSession,
+    session: { capabilities: {}, accounts: {}, primaryAccounts: { "urn:inbuxa:jmap:registry": "self" }, username, ihasmail: { permissions } } as unknown as JmapSession,
   });
 }
 

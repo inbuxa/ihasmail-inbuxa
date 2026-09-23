@@ -20,7 +20,7 @@ export const CAP = {
 } as const;
 
 /** Stalwart's own capability, which carries its `x:` registry methods. */
-export const STALWART_CAP = "urn:stalwart:jmap";
+export const STALWART_CAP = "urn:inbuxa:jmap:registry";
 
 /** INBUXA's own capability (contract C-1), on the signed-in account. */
 export const INBUXA_CAP = "urn:inbuxa:jmap";
@@ -155,7 +155,7 @@ export class JmapClient {
    * Whether the server carries a capability at all, wherever it chose to
    * advertise it.
    *
-   * Stalwart hands `urn:stalwart:jmap` out per-account rather than putting it
+   * Stalwart hands `urn:inbuxa:jmap:registry` out per-account rather than putting it
    * in the session-level `capabilities`, so `hasCapability` alone reports every
    * real 0.16 server as though it were older. Look in all three places.
    */
