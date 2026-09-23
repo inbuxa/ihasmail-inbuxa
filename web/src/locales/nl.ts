@@ -1710,6 +1710,9 @@ export const catalog: Catalog = {
     "To confirm, type {phrase}": "Typ ter bevestiging {phrase}",
     "Turn off legacy protocols": "Verouderde mailprotocollen uitschakelen",
     "Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.": "Verouderde mailprotocollen zijn uitgeschakeld voor uw organisatie. Alleen {app} en JMAP-apps kunnen inloggen.",
+    // ── Spam filter: the language model's opinion (inbuxa) ──────────
+    "Language model's opinion": "Oordeel van het taalmodel",
+    "One of several signals the spam filter weighed": "Een van meerdere signalen die het spamfilter heeft meegewogen",
   },
   plurals: {
     // ── Administration: legacy mail protocols (INBUXA) ──────────────

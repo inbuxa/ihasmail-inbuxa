@@ -1721,6 +1721,9 @@ export const catalog: Catalog = {
     "To confirm, type {phrase}": "確認のため {phrase} と入力してください",
     "Turn off legacy protocols": "従来のメールプロトコルをオフにする",
     "Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.": "組織では従来のメールプロトコルがオフになっています。サインインできるのは {app} と JMAP アプリのみです。",
+    // ── Spam filter: the language model's opinion (inbuxa) ──────────
+    "Language model's opinion": "言語モデルの見解",
+    "One of several signals the spam filter weighed": "迷惑メールフィルターが考慮した複数の判断材料のひとつ",
   },
   plurals: {
     // ── Administration: legacy mail protocols (INBUXA) ──────────────
