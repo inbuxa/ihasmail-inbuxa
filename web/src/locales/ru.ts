@@ -1715,6 +1715,9 @@ export const catalog: Catalog = {
     "To confirm, type {phrase}": "Для подтверждения введите {phrase}",
     "Turn off legacy protocols": "Отключить устаревшие почтовые протоколы",
     "Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.": "Устаревшие почтовые протоколы отключены для вашей организации. Входить могут только {app} и приложения JMAP.",
+    // ── Spam filter: the language model's opinion (inbuxa) ──────────
+    "Language model's opinion": "Мнение языковой модели",
+    "One of several signals the spam filter weighed": "Один из нескольких признаков, которые учёл спам-фильтр",
   },
   plurals: {
     // ── Administration: legacy mail protocols (INBUXA) ──────────────

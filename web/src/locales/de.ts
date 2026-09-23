@@ -1740,6 +1740,9 @@ export const catalog: Catalog = {
     "To confirm, type {phrase}": "Zur Bestätigung {phrase} eingeben",
     "Turn off legacy protocols": "Ältere Mailprotokolle ausschalten",
     "Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.": "Ältere Mailprotokolle sind für Ihre Organisation ausgeschaltet. Nur {app} und JMAP-Apps können sich anmelden.",
+    // ── Spam filter: the language model's opinion (inbuxa) ──────────
+    "Language model's opinion": "Einschätzung des Sprachmodells",
+    "One of several signals the spam filter weighed": "Eines von mehreren Signalen, die der Spamfilter berücksichtigt hat",
   },
   plurals: {
     // ── Administration: legacy mail protocols (INBUXA) ──────────────
