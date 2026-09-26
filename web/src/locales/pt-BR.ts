@@ -1716,6 +1716,11 @@ export const catalog: Catalog = {
     "To confirm, type {phrase}": "Para confirmar, digite {phrase}",
     "Turn off legacy protocols": "Desativar os protocolos de e-mail legados",
     "Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.": "Os protocolos de e-mail legados estão desativados para sua organização. Só {app} e aplicativos JMAP podem entrar.",
+    // ── About: webmail and mail server nodes (inbuxa) ──────────────
+    "Webmail node": "Nó do webmail",
+    "Mail server node": "Nó do servidor de e-mail",
+    "{host} does not resolve": "{host} não resolve",
+    "unavailable": "indisponível",
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "Opinião do modelo de linguagem",
     "One of several signals the spam filter weighed": "Um dos vários sinais considerados pelo filtro de spam",

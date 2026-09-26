@@ -1721,6 +1721,11 @@ export const catalog: Catalog = {
     "To confirm, type {phrase}": "確認のため {phrase} と入力してください",
     "Turn off legacy protocols": "従来のメールプロトコルをオフにする",
     "Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.": "組織では従来のメールプロトコルがオフになっています。サインインできるのは {app} と JMAP アプリのみです。",
+    // ── About: webmail and mail server nodes (inbuxa) ──────────────
+    "Webmail node": "Webメールのノード",
+    "Mail server node": "メールサーバーのノード",
+    "{host} does not resolve": "{host} の名前解決ができません",
+    "unavailable": "利用できません",
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "言語モデルの見解",
     "One of several signals the spam filter weighed": "迷惑メールフィルターが考慮した複数の判断材料のひとつ",

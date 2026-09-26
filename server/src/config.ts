@@ -296,6 +296,12 @@ export const config = {
    * such a tree, so the default is INBUXA's fork.
    */
   sourceUrl: env("SOURCE_URL", "https://git.coffeylabs.org/inbuxa/ihasmail-inbuxa"),
+  /**
+   * ihasmail-inbuxa: this webmail's own name, shown in Settings > About next
+   * to the mail node it talks to. Set per host by the deploy; empty means the
+   * container's hostname. See nodes.ts.
+   */
+  nodeName: env("NODE_NAME", ""),
   host: env("HOST", "0.0.0.0"),
   port: int("PORT", 8080),
   /**

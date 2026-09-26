@@ -1740,6 +1740,11 @@ export const catalog: Catalog = {
     "To confirm, type {phrase}": "Zur Bestätigung {phrase} eingeben",
     "Turn off legacy protocols": "Ältere Mailprotokolle ausschalten",
     "Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.": "Ältere Mailprotokolle sind für Ihre Organisation ausgeschaltet. Nur {app} und JMAP-Apps können sich anmelden.",
+    // ── About: webmail and mail server nodes (inbuxa) ──────────────
+    "Webmail node": "Webmail-Knoten",
+    "Mail server node": "Mailserver-Knoten",
+    "{host} does not resolve": "{host} lässt sich nicht auflösen",
+    "unavailable": "nicht verfügbar",
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "Einschätzung des Sprachmodells",
     "One of several signals the spam filter weighed": "Eines von mehreren Signalen, die der Spamfilter berücksichtigt hat",
