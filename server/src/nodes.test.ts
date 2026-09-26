@@ -1,6 +1,6 @@
 import { test, beforeEach } from "node:test";
 import assert from "node:assert/strict";
-import { clearNodeCache, mailNode } from "./nodes.js";
+import { clearNodeCache, mailNode, ptrName } from "./nodes.js";
 
 /**
  * About names the mail node by the PTR of the address the server's name
@@ -37,4 +37,13 @@ test("the answer is cached for a minute, then looked up again", async () => {
   assert.equal(calls, 1);
   await mailNode("https://mail.example.com", count, rev, 61_000);
   assert.equal(calls, 2);
+});
+
+test("the PTR name is built for IPv4 and IPv6 alike", () => {
+  assert.equal(ptrName("192.0.2.52"), "52.2.0.192.in-addr.arpa");
+  assert.equal(
+    ptrName("2001:db8::25"),
+    "5.2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa",
+  );
+  assert.equal(ptrName("::1"), "1" + ".0".repeat(31) + ".ip6.arpa");
 });

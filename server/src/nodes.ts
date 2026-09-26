@@ -12,7 +12,8 @@
  * node has one: mail/mx2/mx3). The server offers its node name only to
  * administrators, so asking it would leave everyone else with nothing.
  */
-import { lookup as dnsLookup, reverse as dnsReverse } from "node:dns/promises";
+import { lookup as dnsLookup, resolvePtr } from "node:dns/promises";
+import { isIPv4 } from "node:net";
 import { hostname } from "node:os";
 import { config } from "./config.js";
 
@@ -32,6 +33,22 @@ export interface Nodes {
 
 type Lookup = (host: string) => Promise<{ address: string }>;
 type Reverse = (address: string) => Promise<string[]>;
+
+/**
+ * The reverse-lookup name for an address: 1.2.0.192.in-addr.arpa, or the
+ * nibble form under ip6.arpa. Asked for directly, because `dns.reverse` came
+ * back empty in the image while the resolver answered the PTR (2026-09-26).
+ */
+export function ptrName(address: string): string {
+  if (isIPv4(address)) return `${address.split(".").reverse().join(".")}.in-addr.arpa`;
+  const [head = "", tail = ""] = address.split("::");
+  const groups = (part: string) => (part ? part.split(":") : []);
+  const h = groups(head), t = groups(tail);
+  const full = [...h, ...Array(8 - h.length - t.length).fill("0"), ...t];
+  return `${full.map((g) => g.padStart(4, "0")).join("").split("").reverse().join(".")}.ip6.arpa`;
+}
+
+const dnsReverse: Reverse = (address) => resolvePtr(ptrName(address));
 
 const CACHE_MS = 60_000;
 const cache = new Map<string, { node: MailNode; at: number }>();
