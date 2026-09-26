@@ -16,7 +16,8 @@ interface Nodes {
 
 function mailNodeLabel(m: Nodes["mailServer"]): string {
   if (!m.address) return t("{host} does not resolve", { host: m.host });
-  return m.name ? `${m.name} (${m.address})` : m.address;
+  // The node's hostname; the bare address only when it has no PTR record.
+  return m.name ?? m.address;
 }
 
 export function AboutSettings() {
