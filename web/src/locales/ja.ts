@@ -1046,7 +1046,6 @@ export const catalog: Catalog = {
     "Select a conversation to read it here · Press {key} for shortcuts": "スレッドを選ぶとここに表示されます · {key} でショートカット一覧",
     "Select a message to read it here · Press {key} for shortcuts": "メールを選ぶとここに表示されます · {key} でショートカット一覧",
     "Tip: press {key} on a conversation to apply labels. Search with {operator}.": "ヒント: スレッド上で {key} を押すとラベルを付けられます。検索には {operator} が使えます。",
-    "A fast, friendly, open-source webmail for {server}, built on JMAP.": "{server} のための、軽快で使いやすいオープンソースのウェブメール。JMAP で動作します。",
 
     // ── Filters, vacation, capability notices ──────────────────────────
     "Thanks for your message. I'm away until … and will reply when I'm back.": "メールをありがとうございます。……まで不在にしており、戻り次第ご返信いたします。",
@@ -1721,6 +1720,11 @@ export const catalog: Catalog = {
     "To confirm, type {phrase}": "確認のため {phrase} と入力してください",
     "Turn off legacy protocols": "従来のメールプロトコルをオフにする",
     "Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.": "組織では従来のメールプロトコルがオフになっています。サインインできるのは {app} と JMAP アプリのみです。",
+    // ── About: inbuxa, the suite ────────────────────────────────────
+    "{inbuxa} is a complete mail suite: a mail server, the console that administers it, and this webmail, each its own program, installed together and free under the AGPL.": "{inbuxa} は完全なメールスイートです。メールサーバー、それを管理するコンソール、そしてこのWebメール。それぞれ独立したプログラムで、まとめてインストールでき、AGPLのもとで自由に使えます。",
+    "The suite": "スイート",
+    "Administration console": "管理コンソール",
+    "Webmail": "Webメール",
     // ── About: webmail and mail server nodes (inbuxa) ──────────────
     "Webmail node": "Webメールのノード",
     "Mail server node": "メールサーバーのノード",

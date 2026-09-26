@@ -1123,7 +1123,6 @@ export const catalog: Catalog = {
     "Select a conversation to read it here · Press {key} for shortcuts": "Выберите цепочку, чтобы прочитать её здесь · {key} — сочетания клавиш",
     "Select a message to read it here · Press {key} for shortcuts": "Выберите письмо, чтобы прочитать его здесь · {key} — сочетания клавиш",
     "Tip: press {key} on a conversation to apply labels. Search with {operator}.": "Совет: нажмите {key} на цепочке, чтобы присвоить ярлыки. Ищите через {operator}.",
-    "A fast, friendly, open-source webmail for {server}, built on JMAP.": "Быстрая и удобная веб-почта с открытым кодом для {server}, построенная на JMAP.",
     "Defaults for the calendar views and new events.": "Значения по умолчанию для видов календаря и новых событий.",
     "Replies will go to this address instead of the From address": "Ответы будут приходить на этот адрес, а не на адрес отправителя",
     "Replies to mail sent from this identity go here instead of the From address.": "Ответы на письма из этого профиля приходят сюда, а не на адрес отправителя.",
@@ -1715,6 +1714,11 @@ export const catalog: Catalog = {
     "To confirm, type {phrase}": "Для подтверждения введите {phrase}",
     "Turn off legacy protocols": "Отключить устаревшие почтовые протоколы",
     "Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.": "Устаревшие почтовые протоколы отключены для вашей организации. Входить могут только {app} и приложения JMAP.",
+    // ── About: inbuxa, the suite ────────────────────────────────────
+    "{inbuxa} is a complete mail suite: a mail server, the console that administers it, and this webmail, each its own program, installed together and free under the AGPL.": "{inbuxa} — полноценный почтовый пакет: почтовый сервер, консоль для его администрирования и эта веб-почта. Каждый компонент — отдельная программа; устанавливаются они вместе и свободно распространяются по лицензии AGPL.",
+    "The suite": "Пакет",
+    "Administration console": "Консоль администрирования",
+    "Webmail": "Веб-почта",
     // ── About: webmail and mail server nodes (inbuxa) ──────────────
     "Webmail node": "Узел веб-почты",
     "Mail server node": "Узел почтового сервера",

@@ -1124,7 +1124,6 @@ export const catalog: Catalog = {
     "Select a conversation to read it here · Press {key} for shortcuts": "Selecione uma conversa para lê-la aqui · {key} para os atalhos",
     "Select a message to read it here · Press {key} for shortcuts": "Selecione uma mensagem para lê-la aqui · {key} para os atalhos",
     "Tip: press {key} on a conversation to apply labels. Search with {operator}.": "Dica: pressione {key} em uma conversa para aplicar marcadores. Pesquise com {operator}.",
-    "A fast, friendly, open-source webmail for {server}, built on JMAP.": "Um webmail livre, rápido e agradável para {server}, feito sobre JMAP.",
     "Defaults for the calendar views and new events.": "Padrões das visualizações da agenda e dos eventos novos.",
     "Replies will go to this address instead of the From address": "As respostas irão para este endereço em vez do endereço do remetente",
     "Replies to mail sent from this identity go here instead of the From address.": "As respostas às mensagens enviadas por esta identidade chegam aqui em vez do endereço do remetente.",
@@ -1716,6 +1715,11 @@ export const catalog: Catalog = {
     "To confirm, type {phrase}": "Para confirmar, digite {phrase}",
     "Turn off legacy protocols": "Desativar os protocolos de e-mail legados",
     "Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.": "Os protocolos de e-mail legados estão desativados para sua organização. Só {app} e aplicativos JMAP podem entrar.",
+    // ── About: inbuxa, the suite ────────────────────────────────────
+    "{inbuxa} is a complete mail suite: a mail server, the console that administers it, and this webmail, each its own program, installed together and free under the AGPL.": "{inbuxa} é uma suíte de e-mail completa: um servidor de e-mail, o console que o administra e este webmail, cada um um programa próprio, instalados juntos e livres sob a AGPL.",
+    "The suite": "A suíte",
+    "Administration console": "Console de administração",
+    "Webmail": "Webmail",
     // ── About: webmail and mail server nodes (inbuxa) ──────────────
     "Webmail node": "Nó do webmail",
     "Mail server node": "Nó do servidor de e-mail",
