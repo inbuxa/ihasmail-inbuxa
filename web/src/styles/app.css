@@ -1682,6 +1682,8 @@ select optgroup { background-color: var(--bg-elev); color: var(--fg); }
 .shortcut-grid h3 { margin: 0 0 6px; font-size: .9em; text-transform: uppercase; letter-spacing: .05em; color: var(--fg-faint); }
 .shortcut-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; gap: 12px; }
 .shortcut-row .keys { display: flex; gap: 4px; }
+/* ihasmail-inbuxa: the product name in a sentence, set apart in the brand teal. */
+.brand-inbuxa { color: #14b8a6; font-weight: 700; }
 .sessions-table { width: 100%; border-collapse: collapse; font-size: .92em; }
 .sessions-table th, .sessions-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); }
 .sessions-table th { color: var(--fg-muted); font-weight: 600; font-size: .85em; }

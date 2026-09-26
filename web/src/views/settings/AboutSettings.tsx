@@ -32,6 +32,8 @@ export function AboutSettings() {
   const nodeCell = (v: (n: Nodes) => string) =>
     nodes === null ? t("Loading…") : nodes === "error" ? t("unavailable") : <span className="mono notranslate" translate="no">{v(nodes)}</span>;
   const caps = Object.keys(session?.capabilities ?? {});
+  // Only a session that may administer is told where the console is.
+  const adminUrl = session?.ihasmail?.server?.adminUrl ?? null;
   // A deployment running modified code should offer its own source, not ours.
   const sourceUrl = session?.ihasmail?.sourceUrl ?? DEFAULT_SOURCE_URL;
   return (
@@ -41,7 +43,9 @@ export function AboutSettings() {
           The name comes from APP_NAME now, so a renamed deployment is named
           here too. */}
       <h1>{t("About {app}", { app: appName })}</h1>
-      <p className="lead">{tNode("A fast, friendly, open-source webmail for {server}, built on JMAP.", { server: <span className="notranslate" translate="no">{appName}</span> })}</p>
+      {/* inbuxa is the suite, not only this webmail: the product name here is
+          inbuxa's own, not APP_NAME. */}
+      <p className="lead">{tNode("{inbuxa} is a complete mail suite: a mail server, the console that administers it, and this webmail, each its own program, installed together and free under the AGPL.", { inbuxa: <strong className="brand-inbuxa notranslate" translate="no">inbuxa</strong> })}</p>
       <div className="row" style={{ gap: 16, alignItems: "center", marginBottom: 16 }}>
         <img src={withBase("/img/inbuxa-mark.png")} alt="" width={80} />
         <div>
@@ -52,11 +56,21 @@ export function AboutSettings() {
           <div className="hint">{tNode("AGPL-3.0-or-later · {source}", { source: <a href={sourceUrl} target="_blank" rel="noopener noreferrer" className="notranslate" translate="no">{sourceUrl.replace(/^https?:\/\//, "")}</a> })}</div>
         </div>
       </div>
+      <h2>{t("The suite")}</h2>
+      <table className="sessions-table">
+        <tbody>
+          <tr><td>{t("Mail server")}</td><td className="notranslate" translate="no">inbuxa</td></tr>
+          {adminUrl && (
+            <tr><td>{t("Administration console")}</td><td><a href={adminUrl} target="_blank" rel="noopener noreferrer" className="notranslate" translate="no">{adminUrl.replace(/^https?:\/\//, "").replace(/\/$/, "")}</a></td></tr>
+          )}
+          <tr><td>{t("Webmail")}</td><td className="notranslate" translate="no">v{APP_VERSION}</td></tr>
+          <tr><td>{t("Website")}</td><td><a href="https://inbuxa.org" target="_blank" rel="noopener noreferrer" className="notranslate" translate="no">inbuxa.org</a></td></tr>
+        </tbody>
+      </table>
       <h2>{t("Server")}</h2>
       <table className="sessions-table">
         <tbody>
           <tr><td>{t("Signed in as")}</td><td>{session?.username}</td></tr>
-          <tr><td>{t("Mail server")}</td><td className="notranslate" translate="no">inbuxa</td></tr>
           <tr><td>{t("Webmail node")}</td><td>{nodeCell((n) => n.webmail)}</td></tr>
           <tr><td>{t("Mail server node")}</td><td>{nodeCell((n) => mailNodeLabel(n.mailServer))}</td></tr>
           <tr><td>{t("Accounts")}</td><td>{Object.values(session?.accounts ?? {}).map((a) => a.name).join(", ")}</td></tr>

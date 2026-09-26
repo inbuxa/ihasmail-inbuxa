@@ -1045,7 +1045,6 @@ export const catalog: Catalog = {
     "Select a conversation to read it here · Press {key} for shortcuts": "选择一个会话即可在此阅读 · 按 {key} 查看快捷键",
     "Select a message to read it here · Press {key} for shortcuts": "选择一封邮件即可在此阅读 · 按 {key} 查看快捷键",
     "Tip: press {key} on a conversation to apply labels. Search with {operator}.": "提示：在会话上按 {key} 可添加标签。使用 {operator} 搜索。",
-    "A fast, friendly, open-source webmail for {server}, built on JMAP.": "一款面向 {server} 的快速、友好的开源网页邮箱，基于 JMAP 构建。",
 
     // ── Filters, vacation, capability notices ──────────────────────────
     "Thanks for your message. I'm away until … and will reply when I'm back.": "感谢您的来信。我将外出至……，回来后会尽快回复。",
@@ -1720,6 +1719,11 @@ export const catalog: Catalog = {
     "To confirm, type {phrase}": "请输入 {phrase} 以确认",
     "Turn off legacy protocols": "关闭传统邮件协议",
     "Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.": "您的组织已关闭传统邮件协议。只有 {app} 和 JMAP 应用可以登录。",
+    // ── About: inbuxa, the suite ────────────────────────────────────
+    "{inbuxa} is a complete mail suite: a mail server, the console that administers it, and this webmail, each its own program, installed together and free under the AGPL.": "{inbuxa} 是一套完整的邮件套件：邮件服务器、管理它的控制台，以及这个网页邮箱。三者各自是独立的程序，一起安装，并以 AGPL 许可证自由使用。",
+    "The suite": "套件",
+    "Administration console": "管理控制台",
+    "Webmail": "网页邮箱",
     // ── About: webmail and mail server nodes (inbuxa) ──────────────
     "Webmail node": "网页邮箱节点",
     "Mail server node": "邮件服务器节点",

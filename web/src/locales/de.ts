@@ -1059,7 +1059,6 @@ export const catalog: Catalog = {
     "Select a conversation to read it here · Press {key} for shortcuts": "Wählen Sie eine Konversation, um sie hier zu lesen · {key} für Tastenkürzel",
     "Select a message to read it here · Press {key} for shortcuts": "Wählen Sie eine Nachricht, um sie hier zu lesen · {key} für Tastenkürzel",
     "Tip: press {key} on a conversation to apply labels. Search with {operator}.": "Tipp: Drücken Sie {key} auf einer Konversation, um Labels zu vergeben. Suchen Sie mit {operator}.",
-    "A fast, friendly, open-source webmail for {server}, built on JMAP.": "Eine schnelle, freundliche Open-Source-Webmail für {server}, auf JMAP aufgebaut.",
     "Defaults for the calendar views and new events.": "Vorgaben für die Kalenderansichten und neue Termine.",
     "Replies will go to this address instead of the From address": "Antworten gehen an diese Adresse statt an die Absenderadresse",
     "Replies to mail sent from this identity go here instead of the From address.": "Antworten auf Nachrichten von dieser Identität gehen hierhin statt an die Absenderadresse.",
@@ -1740,6 +1739,11 @@ export const catalog: Catalog = {
     "To confirm, type {phrase}": "Zur Bestätigung {phrase} eingeben",
     "Turn off legacy protocols": "Ältere Mailprotokolle ausschalten",
     "Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.": "Ältere Mailprotokolle sind für Ihre Organisation ausgeschaltet. Nur {app} und JMAP-Apps können sich anmelden.",
+    // ── About: inbuxa, the suite ────────────────────────────────────
+    "{inbuxa} is a complete mail suite: a mail server, the console that administers it, and this webmail, each its own program, installed together and free under the AGPL.": "{inbuxa} ist eine komplette Mail-Suite: ein Mailserver, die Konsole, mit der er verwaltet wird, und dieses Webmail – jedes ein eigenes Programm, gemeinsam installiert und frei unter der AGPL.",
+    "The suite": "Die Suite",
+    "Administration console": "Verwaltungskonsole",
+    "Webmail": "Webmail",
     // ── About: webmail and mail server nodes (inbuxa) ──────────────
     "Webmail node": "Webmail-Knoten",
     "Mail server node": "Mailserver-Knoten",

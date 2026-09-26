@@ -1126,7 +1126,6 @@ export const catalog: Catalog = {
     "Select a conversation to read it here · Press {key} for shortcuts": "Sélectionnez une conversation pour la lire ici · {key} pour les raccourcis",
     "Select a message to read it here · Press {key} for shortcuts": "Sélectionnez un message pour le lire ici · {key} pour les raccourcis",
     "Tip: press {key} on a conversation to apply labels. Search with {operator}.": "Astuce : appuyez sur {key} sur une conversation pour appliquer des libellés. Recherchez avec {operator}.",
-    "A fast, friendly, open-source webmail for {server}, built on JMAP.": "Un webmail libre, rapide et agréable pour {server}, bâti sur JMAP.",
     "Defaults for the calendar views and new events.": "Valeurs par défaut des vues d'agenda et des nouveaux événements.",
     "Replies will go to this address instead of the From address": "Les réponses iront à cette adresse plutôt qu'à l'adresse d'expédition",
     "Replies to mail sent from this identity go here instead of the From address.": "Les réponses aux messages envoyés depuis cette identité arrivent ici plutôt qu'à l'adresse d'expédition.",
@@ -1718,6 +1717,11 @@ export const catalog: Catalog = {
     "To confirm, type {phrase}": "Pour confirmer, saisissez {phrase}",
     "Turn off legacy protocols": "Désactiver les protocoles de messagerie historiques",
     "Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.": "Les protocoles de messagerie historiques sont désactivés pour votre organisation. Seuls {app} et les applications JMAP peuvent se connecter.",
+    // ── About: inbuxa, the suite ────────────────────────────────────
+    "{inbuxa} is a complete mail suite: a mail server, the console that administers it, and this webmail, each its own program, installed together and free under the AGPL.": "{inbuxa} est une suite de messagerie complète : un serveur de messagerie, la console qui l’administre et ce webmail, chacun étant un programme à part entière, installés ensemble et libres sous licence AGPL.",
+    "The suite": "La suite",
+    "Administration console": "Console d’administration",
+    "Webmail": "Webmail",
     // ── About: webmail and mail server nodes (inbuxa) ──────────────
     "Webmail node": "Nœud du webmail",
     "Mail server node": "Nœud du serveur de messagerie",
