@@ -1709,6 +1709,11 @@ export const catalog: Catalog = {
     "To confirm, type {phrase}": "Для підтвердження введіть {phrase}",
     "Turn off legacy protocols": "Вимкнути застарілі поштові протоколи",
     "Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.": "Застарілі поштові протоколи вимкнено для вашої організації. Входити можуть лише {app} і програми JMAP.",
+    // ── About: webmail and mail server nodes (inbuxa) ──────────────
+    "Webmail node": "Вузол вебпошти",
+    "Mail server node": "Вузол поштового сервера",
+    "{host} does not resolve": "{host} не розпізнається",
+    "unavailable": "недоступно",
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "Думка мовної моделі",
     "One of several signals the spam filter weighed": "Одна з кількох ознак, які врахував спам-фільтр",

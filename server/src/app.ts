@@ -44,6 +44,7 @@ import { imageProxyHandler } from "./imageproxy.js";
 import { SignInError, finish as finishSignIn, needsRefresh, oauthEnabled, refreshTokens, singleServer, start as startSignIn, type TokenSet } from "./oauth.js";
 import { icsProxyHandler } from "./icsproxy.js";
 import { staticHandler } from "./static.js";
+import { mailNode, webmailNode } from "./nodes.js";
 
 type Env = { Variables: { session: LiveSession } };
 
@@ -607,6 +608,12 @@ export function createApp(basePath = config.basePath): Hono<Env> {
     }
     deleteCookie(c, config.cookieName, { path: cookiePath });
     return c.json({ ok: true });
+  });
+
+  /* ihasmail-inbuxa: which webmail node this is, and which mail node it talks to (nodes.ts). */
+  api.get("/about/nodes", requireSession, async (c) => {
+    const session = c.get("session");
+    return c.json({ webmail: webmailNode(), mailServer: await mailNode(upstreamFor(session.username)) });
   });
 
   api.get("/auth/sessions", requireSession, (c) => {

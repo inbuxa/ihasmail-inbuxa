@@ -1720,6 +1720,11 @@ export const catalog: Catalog = {
     "To confirm, type {phrase}": "请输入 {phrase} 以确认",
     "Turn off legacy protocols": "关闭传统邮件协议",
     "Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.": "您的组织已关闭传统邮件协议。只有 {app} 和 JMAP 应用可以登录。",
+    // ── About: webmail and mail server nodes (inbuxa) ──────────────
+    "Webmail node": "网页邮箱节点",
+    "Mail server node": "邮件服务器节点",
+    "{host} does not resolve": "无法解析 {host}",
+    "unavailable": "不可用",
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "语言模型的判断",
     "One of several signals the spam filter weighed": "垃圾邮件过滤考虑的多个信号之一",

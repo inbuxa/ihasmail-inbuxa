@@ -1,15 +1,35 @@
+import { useEffect, useState } from "react";
 import { useSession } from "@/store/session";
 import { useAppName } from "@/lib/brand";
-import { client } from "@/jmap/client";
+import { apiFetch, client } from "@/jmap/client";
 import { APP_VERSION } from "@/lib/version";
 import { DEFAULT_SOURCE_URL } from "@/lib/source";
 import { withBase } from "@/lib/basePath";
 import { t, tNode } from "@/lib/i18n";
 import { InbuxaWordmark } from "@/ui/InbuxaWordmark";
 
+/** ihasmail-inbuxa: which webmail node answered and which mail node it talks to (server/src/nodes.ts). */
+interface Nodes {
+  webmail: string;
+  mailServer: { host: string; address: string | null; name: string | null };
+}
+
+function mailNodeLabel(m: Nodes["mailServer"]): string {
+  if (!m.address) return t("{host} does not resolve", { host: m.host });
+  return m.name ? `${m.name} (${m.address})` : m.address;
+}
+
 export function AboutSettings() {
   const appName = useAppName();
   const session = useSession((s) => s.session);
+  // Fetched on every visit, not cached with the session: when troubleshooting,
+  // the question is which nodes are in use now.
+  const [nodes, setNodes] = useState<Nodes | null | "error">(null);
+  useEffect(() => {
+    apiFetch<Nodes>("/api/about/nodes").then(setNodes).catch(() => setNodes("error"));
+  }, []);
+  const nodeCell = (v: (n: Nodes) => string) =>
+    nodes === null ? t("Loading…") : nodes === "error" ? t("unavailable") : <span className="mono notranslate" translate="no">{v(nodes)}</span>;
   const caps = Object.keys(session?.capabilities ?? {});
   // A deployment running modified code should offer its own source, not ours.
   const sourceUrl = session?.ihasmail?.sourceUrl ?? DEFAULT_SOURCE_URL;
@@ -36,6 +56,8 @@ export function AboutSettings() {
         <tbody>
           <tr><td>{t("Signed in as")}</td><td>{session?.username}</td></tr>
           <tr><td>{t("Mail server")}</td><td className="notranslate" translate="no">inbuxa</td></tr>
+          <tr><td>{t("Webmail node")}</td><td>{nodeCell((n) => n.webmail)}</td></tr>
+          <tr><td>{t("Mail server node")}</td><td>{nodeCell((n) => mailNodeLabel(n.mailServer))}</td></tr>
           <tr><td>{t("Accounts")}</td><td>{Object.values(session?.accounts ?? {}).map((a) => a.name).join(", ")}</td></tr>
           <tr><td>{t("Max upload")}</td><td>{t("{size} MB", { size: Math.round(client.maxSizeUpload / 1048576) })}</td></tr>
           <tr><td>{t("Image privacy proxy")}</td><td>{session?.ihasmail?.imageProxy ? t("enabled") : t("disabled")}</td></tr>
