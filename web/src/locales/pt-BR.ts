@@ -1728,6 +1728,21 @@ export const catalog: Catalog = {
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "Opinião do modelo de linguagem",
     "One of several signals the spam filter weighed": "Um dos vários sinais considerados pelo filtro de spam",
+    // inbuxa AL-7, AL-8: a locked account handed to the reader
+    "You no longer have access to {name}. Back to your own mail.": "Você não tem mais acesso a {name}. De volta ao seu próprio e-mail.",
+    "You can't send from {name}. It was handed to you to read, not to send as.": "Você não pode enviar de {name}. A conta foi entregue a você para leitura, não para enviar em nome dela.",
+    "This account was handed to you to read. Nothing in it can be changed.": "Esta conta foi entregue a você para leitura. Nada nela pode ser alterado.",
+    "You can file and move mail in this account, but not delete it.": "Você pode arquivar e mover e-mails nesta conta, mas não excluí-los.",
+    "Read only": "Somente leitura",
+    "Read and organize": "Ler e organizar",
+    "Full access": "Acesso total",
+    "Locked account:": "Conta bloqueada:",
+    "You can send as this account": "Você pode enviar como esta conta",
+    "Back to my mail": "Voltar ao meu e-mail",
+    "Send or close the message you're writing first.": "Envie ou feche primeiro a mensagem que está escrevendo.",
+    "Mail to show": "E-mail a exibir",
+    "My mail": "Meu e-mail",
+    "Locked account": "Conta bloqueada",
   },
   plurals: {
     // ── Administration: legacy mail protocols (INBUXA) ──────────────

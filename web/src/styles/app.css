@@ -1248,6 +1248,20 @@ a.menu-item:hover { color: var(--fg); }
 .topbar .brand img { width: 34px; height: 34px; object-fit: contain; }
 .topbar .brand .brand-name { color: #14b8a6; }
 .topbar .brand .brand-name span { color: var(--fg-muted); font-weight: 500; }
+/*
+ * inbuxa AL-7: a locked account's mail in view. The bar is its own grid row
+ * above the top bar; its red is fixed, never the palette's, so it reads the
+ * same in every palette and mode and can't pass for part of a theme (white on
+ * red-700 is 6.5:1). The wordmark turns red too, with a padlock beside it.
+ */
+.app.delegated { grid-template-rows: auto var(--topbar-h) 1fr; }
+.delegated-bar { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: #b91c1c; color: #fff; font-size: .9em; min-width: 0; }
+.delegated-bar strong { font-weight: 700; }
+.delegated-bar button { flex: none; border: 1px solid rgba(255, 255, 255, .7); background: transparent; color: #fff; border-radius: 999px; padding: 3px 12px; font: inherit; font-weight: 600; cursor: pointer; }
+.delegated-bar button:hover, .delegated-bar button:focus-visible { background: rgba(255, 255, 255, .15); }
+.topbar .brand.locked .brand-name, .topbar .brand.locked .brand-lock { color: #dc2626; }
+[data-theme="dark"] .topbar .brand.locked .brand-name, [data-theme="dark"] .topbar .brand.locked .brand-lock { color: #f87171; }
+.topbar .brand .brand-lock { flex: none; }
 /* `min-width: 0`, or the flex default of `auto` holds the search field at its
    own min-content and the account buttons beside it are pushed off a phone. */
 .searchbar { flex: 1 1 auto; min-width: 0; max-width: 720px; margin: 0 auto; position: relative; }

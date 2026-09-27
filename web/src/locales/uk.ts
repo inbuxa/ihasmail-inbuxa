@@ -1721,6 +1721,21 @@ export const catalog: Catalog = {
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "Думка мовної моделі",
     "One of several signals the spam filter weighed": "Одна з кількох ознак, які врахував спам-фільтр",
+    // inbuxa AL-7, AL-8: a locked account handed to the reader
+    "You no longer have access to {name}. Back to your own mail.": "У вас більше немає доступу до {name}. Повертаємося до вашої пошти.",
+    "You can't send from {name}. It was handed to you to read, not to send as.": "Ви не можете надсилати листи від імені {name}. Обліковий запис передано вам для читання, а не для надсилання.",
+    "This account was handed to you to read. Nothing in it can be changed.": "Цей обліковий запис передано вам для читання. Змінити в ньому нічого не можна.",
+    "You can file and move mail in this account, but not delete it.": "У цьому обліковому записі ви можете впорядковувати й переміщувати листи, але не видаляти їх.",
+    "Read only": "Лише читання",
+    "Read and organize": "Читання й упорядкування",
+    "Full access": "Повний доступ",
+    "Locked account:": "Заблокований обліковий запис:",
+    "You can send as this account": "Ви можете надсилати від імені цього облікового запису",
+    "Back to my mail": "Повернутися до моєї пошти",
+    "Send or close the message you're writing first.": "Спочатку надішліть або закрийте лист, який пишете.",
+    "Mail to show": "Яку пошту показати",
+    "My mail": "Моя пошта",
+    "Locked account": "Заблокований обліковий запис",
   },
   plurals: {
     // ── Administration: legacy mail protocols (INBUXA) ──────────────

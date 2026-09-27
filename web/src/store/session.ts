@@ -9,6 +9,7 @@ import { reloadIfServerRebuilt } from "@/lib/sw/staleBuild";
 import { unsubscribeThisDevice } from "@/lib/notify/webpush";
 import { clearAllData, clearSignedInData, setDeviceTrusted } from "@/lib/storage";
 import { startIdleLogout, stopIdleLogout } from "@/lib/idleLogout";
+import { delegationOf, type Delegation } from "@/lib/delegation";
 
 export type AuthStatus = "loading" | "anonymous" | "authenticated";
 
@@ -17,6 +18,14 @@ interface SessionState {
   session: JmapSession | null;
   /** Selected mail account (defaults to primary). */
   accountId: Id | null;
+  /**
+   * A locked account handed to the reader that the mail view shows instead
+   * of their own (inbuxa AL-7). Only mail follows it: settings, filters,
+   * push and everything else stay the reader's own.
+   */
+  viewing: Id | null;
+  /** The name of an account whose delegation ended while it was in view. */
+  delegationEnded: string | null;
   error: string | null;
   pushConnected: boolean;
   /** Finer than pushConnected: tells "reconnecting" from "not connected". */
@@ -26,6 +35,9 @@ interface SessionState {
   logout(): Promise<void>;
   refresh(): Promise<void>;
   setAccount(id: Id): void;
+  /** Show a delegated account's mail, or the reader's own with null. */
+  view(id: Id | null): void;
+  clearDelegationEnded(): void;
   /** The account to read and write for a capability, honoring the account switcher. */
   accountFor(cap: string): Id | null;
   /** The user's own account for a capability, whatever they are looking at. */
@@ -38,6 +50,8 @@ export const useSession = create<SessionState>((set, get) => ({
   status: "loading",
   session: null,
   accountId: null,
+  viewing: null,
+  delegationEnded: null,
   error: null,
   pushConnected: false,
   pushState: "disconnected",
@@ -99,7 +113,7 @@ export const useSession = create<SessionState>((set, get) => ({
     // problem next -- and the address book cached here is the same argument.
     clearSignedInData();
     client.session = null;
-    set({ status: "anonymous", session: null, accountId: null });
+    set({ status: "anonymous", session: null, accountId: null, viewing: null });
   },
 
   refresh() {
@@ -109,7 +123,14 @@ export const useSession = create<SessionState>((set, get) => ({
         const s = await apiFetch<JmapSession>("/api/auth/session?refresh=1");
         client.session = s;
         setServerLocale(s.ihasmail?.userLocale);
-        set({ session: s });
+        // A delegation that ended takes the reader back to their own mail
+        const viewing = get().viewing;
+        if (viewing && !delegationOf(s, viewing)) {
+          const name = get().session?.accounts[viewing]?.name ?? null;
+          set({ session: s, viewing: null, delegationEnded: name });
+        } else {
+          set({ session: s });
+        }
       } catch {
         /* ignore */
       } finally {
@@ -121,6 +142,16 @@ export const useSession = create<SessionState>((set, get) => ({
 
   setAccount(id) {
     set({ accountId: id });
+  },
+
+  view(id) {
+    if (id && !delegationOf(get().session, id)) return;
+    if (id === get().viewing) return;
+    set({ viewing: id });
+  },
+
+  clearDelegationEnded() {
+    set({ delegationEnded: null });
   },
 
   accountFor(cap) {
@@ -149,7 +180,7 @@ function applySession(s: JmapSession, set: (p: Partial<SessionState>) => void) {
     startIdleLogout(() => void useSession.getState().logout());
   }
   const accountId = s.primaryAccounts[CAP.mail] ?? Object.keys(s.accounts)[0] ?? null;
-  set({ status: "authenticated", session: s, accountId, error: null });
+  set({ status: "authenticated", session: s, accountId, viewing: null, error: null });
 }
 
 client.onUnauthenticated(() => {
@@ -162,11 +193,23 @@ client.onUnauthenticated(() => {
   // usual reason to be signed out here, and reloading a form someone has
   // already started typing into would throw the password away.
   void reloadIfServerRebuilt().then((reloading) => {
-    if (!reloading) useSession.setState({ status: "anonymous", session: null, accountId: null });
+    if (!reloading) useSession.setState({ status: "anonymous", session: null, accountId: null, viewing: null });
   });
 });
 
 push.onConnection((state) => useSession.setState({ pushConnected: state === "connected", pushState: state }));
+
+/** The delegation of the locked account in view, if one is (inbuxa AL-6). */
+export function useViewingDelegation(): Delegation | null {
+  const session = useSession((s) => s.session);
+  const viewing = useSession((s) => s.viewing);
+  return delegationOf(session, viewing);
+}
+
+export function viewingDelegation(): Delegation | null {
+  const s = useSession.getState();
+  return delegationOf(s.session, s.viewing);
+}
 
 export function hasCap(cap: string): boolean {
   return client.hasCapability(cap);

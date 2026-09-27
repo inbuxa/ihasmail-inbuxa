@@ -1732,6 +1732,21 @@ export const catalog: Catalog = {
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "语言模型的判断",
     "One of several signals the spam filter weighed": "垃圾邮件过滤考虑的多个信号之一",
+    // inbuxa AL-7, AL-8: a locked account handed to the reader
+    "You no longer have access to {name}. Back to your own mail.": "您已无法访问 {name}。已返回您自己的邮件。",
+    "You can't send from {name}. It was handed to you to read, not to send as.": "您不能从 {name} 发送邮件。该账户交给您是为了阅读，而不是代其发送。",
+    "This account was handed to you to read. Nothing in it can be changed.": "该账户交给您用于阅读，其中的任何内容都不能更改。",
+    "You can file and move mail in this account, but not delete it.": "您可以在此账户中整理和移动邮件，但不能删除。",
+    "Read only": "只读",
+    "Read and organize": "阅读并整理",
+    "Full access": "完全访问",
+    "Locked account:": "已锁定的账户：",
+    "You can send as this account": "您可以以此账户的身份发送",
+    "Back to my mail": "返回我的邮件",
+    "Send or close the message you're writing first.": "请先发送或关闭您正在撰写的邮件。",
+    "Mail to show": "要显示的邮件",
+    "My mail": "我的邮件",
+    "Locked account": "已锁定的账户",
   },
   plurals: {
     // ── Administration: legacy mail protocols (INBUXA) ──────────────

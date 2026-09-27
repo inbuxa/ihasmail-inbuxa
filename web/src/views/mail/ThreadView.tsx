@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useViewingDelegation } from "@/store/session";
 import { AlertOctagon, Archive, ArrowLeft, ChevronDown, ChevronUp, FolderInput, Forward, Mail, MailOpen, MailPlus, MoreVertical, Printer, Reply, ReplyAll, ShieldCheck, Star, Tag, Trash2, Download , Paperclip} from "lucide-react";
 import { useMail } from "@/store/mail";
 import { visibleMessages } from "@/lib/openMessage";
@@ -131,8 +132,11 @@ export function ThreadView({ threadId, mailboxId, onBack, actions, onNavigate, h
   );
 
   // Mark as read after delay
+  // inbuxa AL-6: never in a locked account handed over to read: reading it
+  // changes nothing there, not even $seen
+  const readOnly = useViewingDelegation()?.access === "read";
   useEffect(() => {
-    if (!messages.length) return;
+    if (!messages.length || readOnly) return;
     const unread = messages.filter((e) => !e.keywords.$seen && isExpanded(e)).map((e) => e.id);
     if (!unread.length || settings.markReadDelay < 0) return;
     if (markTimer.current) window.clearTimeout(markTimer.current);
@@ -141,7 +145,7 @@ export function ThreadView({ threadId, mailboxId, onBack, actions, onNavigate, h
       if (markTimer.current) window.clearTimeout(markTimer.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages.map((m) => m.id + (m.keywords.$seen ? "1" : "0")).join(","), settings.markReadDelay]);
+  }, [messages.map((m) => m.id + (m.keywords.$seen ? "1" : "0")).join(","), settings.markReadDelay, readOnly]);
 
   /*
    * Open on the first unread message rather than the newest one (#87).

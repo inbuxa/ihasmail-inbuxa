@@ -1752,6 +1752,21 @@ export const catalog: Catalog = {
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "Einschätzung des Sprachmodells",
     "One of several signals the spam filter weighed": "Eines von mehreren Signalen, die der Spamfilter berücksichtigt hat",
+    // inbuxa AL-7, AL-8: a locked account handed to the reader
+    "You no longer have access to {name}. Back to your own mail.": "Sie haben keinen Zugriff mehr auf {name}. Zurück zu Ihren eigenen E-Mails.",
+    "You can't send from {name}. It was handed to you to read, not to send as.": "Sie können nicht als {name} senden. Das Konto wurde Ihnen zum Lesen übergeben, nicht zum Senden.",
+    "This account was handed to you to read. Nothing in it can be changed.": "Dieses Konto wurde Ihnen zum Lesen übergeben. Darin kann nichts geändert werden.",
+    "You can file and move mail in this account, but not delete it.": "Sie können E-Mails in diesem Konto ablegen und verschieben, aber nicht löschen.",
+    "Read only": "Nur lesen",
+    "Read and organize": "Lesen und ordnen",
+    "Full access": "Voller Zugriff",
+    "Locked account:": "Gesperrtes Konto:",
+    "You can send as this account": "Sie können als dieses Konto senden",
+    "Back to my mail": "Zurück zu meinen E-Mails",
+    "Send or close the message you're writing first.": "Senden oder schließen Sie zuerst die Nachricht, die Sie gerade schreiben.",
+    "Mail to show": "E-Mails anzeigen von",
+    "My mail": "Meine E-Mails",
+    "Locked account": "Gesperrtes Konto",
   },
   plurals: {
     // ── Administration: legacy mail protocols (INBUXA) ──────────────

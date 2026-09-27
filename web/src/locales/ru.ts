@@ -1727,6 +1727,21 @@ export const catalog: Catalog = {
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "Мнение языковой модели",
     "One of several signals the spam filter weighed": "Один из нескольких признаков, которые учёл спам-фильтр",
+    // inbuxa AL-7, AL-8: a locked account handed to the reader
+    "You no longer have access to {name}. Back to your own mail.": "У вас больше нет доступа к {name}. Возвращаемся к вашей почте.",
+    "You can't send from {name}. It was handed to you to read, not to send as.": "Вы не можете отправлять письма от имени {name}. Учётная запись передана вам для чтения, а не для отправки.",
+    "This account was handed to you to read. Nothing in it can be changed.": "Эта учётная запись передана вам для чтения. Изменить в ней ничего нельзя.",
+    "You can file and move mail in this account, but not delete it.": "В этой учётной записи вы можете раскладывать и перемещать письма, но не удалять их.",
+    "Read only": "Только чтение",
+    "Read and organize": "Чтение и упорядочивание",
+    "Full access": "Полный доступ",
+    "Locked account:": "Заблокированная учётная запись:",
+    "You can send as this account": "Вы можете отправлять от имени этой учётной записи",
+    "Back to my mail": "Вернуться к моей почте",
+    "Send or close the message you're writing first.": "Сначала отправьте или закройте письмо, которое пишете.",
+    "Mail to show": "Какую почту показать",
+    "My mail": "Моя почта",
+    "Locked account": "Заблокированная учётная запись",
   },
   plurals: {
     // ── Administration: legacy mail protocols (INBUXA) ──────────────

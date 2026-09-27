@@ -18,6 +18,7 @@ import { canPlaceFolder, compareFolders, neighbour, placeFolder, type Placement 
 import { haptic, useTouchRow } from "@/lib/input/touch";
 import { plural, t } from "@/lib/i18n";
 import { mailboxDisplayName } from "@/lib/mailbox/mailboxName";
+import { useSession } from "@/store/session";
 
 // Loaded when first opened: it is not needed to show mail, and it is not small.
 const ShareDialog = lazy(() => import("../settings/ShareDialog").then((m) => ({ default: m.ShareDialog })));
@@ -99,7 +100,10 @@ export function MailboxTree() {
       toast.error(t("Could not move “{name}”: {reason}", { name: mailboxDisplayName(mailboxes[id]!), reason: (err as Error).message }));
     }
   };
-  const shown = (m: Mailbox) => showHidden || m.isSubscribed || m.role === "inbox";
+  // inbuxa AL-7: subscriptions are the reader's own, and they have none in a
+  // locked account handed to them, so every folder there shows.
+  const viewingOther = useSession((s) => s.viewing !== null);
+  const shown = (m: Mailbox) => showHidden || viewingOther || m.isSubscribed || m.role === "inbox";
 
   // Tree: in `compareFolders` order at every level (Inbox, then any order the
   // user has dragged into place, then the special folders, then A–Z),
@@ -474,6 +478,7 @@ function FolderRow({ mailbox: m, label, depth, hasChildren, open, hiddenUnread, 
 }
 
 function MailboxMenu({ mailbox: m, onClose, onCreateChild, onShare, onMove, onStep, canStep }: { mailbox: Mailbox; onClose: () => void; onCreateChild: () => void; onShare: () => void; onMove: () => void; onStep: (direction: "up" | "down") => void; canStep: (direction: "up" | "down") => boolean }) {
+  const viewingOther = useSession((s) => s.viewing !== null);
   const shared = Object.keys(m.shareWith ?? {}).length > 0;
   const [, navigate] = useLocation();
   const colors = useSettings((s) => s.settings.folderColors);
@@ -542,7 +547,7 @@ function MailboxMenu({ mailbox: m, onClose, onCreateChild, onShare, onMove, onSt
       {/* The way to reorder without a drag: from the keyboard, and on touch. */}
       <MenuItem icon={<ArrowUp size={16} />} label={t("Move up")} onClick={() => onStep("up")} disabled={!canStep("up")} />
       <MenuItem icon={<ArrowDown size={16} />} label={t("Move down")} onClick={() => onStep("down")} disabled={!canStep("down")} />
-      <MenuItem icon={m.isSubscribed ? <EyeOff size={16} /> : <Eye size={16} />} label={m.isSubscribed ? t("Hide from list") : t("Show in list")} onClick={() => void useMail.getState().updateMailbox(m.id, { isSubscribed: !m.isSubscribed })} disabled={m.role === "inbox"} />
+      {!viewingOther && <MenuItem icon={m.isSubscribed ? <EyeOff size={16} /> : <Eye size={16} />} label={m.isSubscribed ? t("Hide from list") : t("Show in list")} onClick={() => void useMail.getState().updateMailbox(m.id, { isSubscribed: !m.isSubscribed })} disabled={m.role === "inbox"} />}
       {/* Sharing a mail folder is withdrawn, not removed: Stalwart accepts and
           stores the share, and it never reaches the other account -- its own
           docs list calendars, address books and files as shareable and not mail
