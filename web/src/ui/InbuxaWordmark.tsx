@@ -1,9 +1,9 @@
 /**
  * The INBUXA wordmark, "inbuxa" in Space Grotesk Bold, as vector paths in the
  * current text color, so it reads on every palette, light or dark. The mark
- * beside it is `/img/inbuxa-mark.png`: ihasmail's own cat and envelope, which
- * INBUXA's logo reuses unchanged. The paths are the same ones INBUXA Admin
- * draws, from the INBUXA logo bundle.
+ * beside it is `/img/inbuxa-mark.png`: inbuxa's own kitten, the family's cat
+ * over a server with a bay for each piece of the suite. The paths are the
+ * same ones inbuxa Admin draws, from the inbuxa logo bundle.
  *
  * ihasmail-inbuxa only. Public ihasmail keeps its own name.
  */
