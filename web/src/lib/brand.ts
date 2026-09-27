@@ -1,4 +1,5 @@
 import { useSession } from "@/store/session";
+import { withBase } from "@/lib/basePath";
 
 /**
  * What this instance calls itself, when nothing has said otherwise yet.
@@ -35,4 +36,26 @@ export function useAppName(): string {
 
 export function currentAppName(): string {
   return useSession.getState().session?.ihasmail?.appName?.trim() || DEFAULT_APP_NAME;
+}
+
+/**
+ * The brand images' version, carried as `?v=` on every URL that names one.
+ *
+ * The images live in `public/img` under fixed names and are served with a
+ * browser cache of hours, so replacing one (the mark changed on 2026-09-27)
+ * left returning visitors on the old picture until their copy expired -- and
+ * the favicon and an installed app's icon hold on longer still. A new value
+ * here is a new URL everywhere at once.
+ *
+ * Date-stamped with a letter for a second change the same day, never a
+ * counter, for the reason the sites give for ASSET_V: a value that could have
+ * been requested before may already be cached, with old bytes behind it.
+ * `index.html`, `public/manifest.webmanifest` and `public/sw.js` can't import
+ * this, so they carry the same value written out; keep the four in step.
+ */
+export const BRAND_V = "2026-09-27a";
+
+/** A brand image's URL under the mount, versioned: `brandImage("/img/logo.png")`. */
+export function brandImage(path: string): string {
+  return withBase(`${path}?v=${BRAND_V}`);
 }

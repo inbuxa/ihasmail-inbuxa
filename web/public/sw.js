@@ -18,7 +18,9 @@ const VERSION = "ihasmail-v2";
  * eventually would.
  */
 const BASE = new URL("./", self.location).pathname.replace(/\/$/, "");
-const SHELL = [`${BASE}/manifest.webmanifest`, `${BASE}/img/logo.png`, `${BASE}/img/icon-192.png`, `${BASE}/favicon.ico`];
+// The brand images' version; the same value as BRAND_V in src/lib/brand.ts.
+const BRAND_V = "2026-09-27a";
+const SHELL = [`${BASE}/manifest.webmanifest`, `${BASE}/img/logo.png?v=${BRAND_V}`, `${BASE}/img/icon-192.png?v=${BRAND_V}`, `${BASE}/favicon.ico?v=${BRAND_V}`];
 
 /*
  * Only the app page may be kept as the app page.
@@ -482,7 +484,7 @@ self.addEventListener("push", (event) => {
       // or a payload too large to carry the message. Say something true
       // rather than inventing a sender.
       await self.registration.showNotification(strings.newMail, {
-        icon: `${BASE}/img/icon-192.png`, badge: `${BASE}/img/favicon-64.png`, tag: "ihasmail-mail", data: { url: `${BASE}/mail` },
+        icon: `${BASE}/img/icon-192.png?v=${BRAND_V}`, badge: `${BASE}/img/favicon-64.png?v=${BRAND_V}`, tag: "ihasmail-mail", data: { url: `${BASE}/mail` },
       });
       return;
     }
@@ -492,8 +494,8 @@ self.addEventListener("push", (event) => {
       const { title, body, preview } = textOf(email, strings);
       await self.registration.showNotification(title, {
         body: preview ? `${body}\n${preview}` : body,
-        icon: `${BASE}/img/icon-192.png`,
-        badge: `${BASE}/img/favicon-64.png`,
+        icon: `${BASE}/img/icon-192.png?v=${BRAND_V}`,
+        badge: `${BASE}/img/favicon-64.png?v=${BRAND_V}`,
         tag: `ihasmail-${email.id || body}`,
         // Only where there is a message to act on: a payload without an id can
         // be shown but not archived, and a button that cannot work should not
@@ -537,8 +539,8 @@ async function runAction(action, data) {
   } catch {
     await self.registration.showNotification(data.title || "ihasmail", {
       body: data.failed || "Could not do that — open ihasmail and try again",
-      icon: `${BASE}/img/icon-192.png`,
-      badge: `${BASE}/img/favicon-64.png`,
+      icon: `${BASE}/img/icon-192.png?v=${BRAND_V}`,
+      badge: `${BASE}/img/favicon-64.png?v=${BRAND_V}`,
       tag: `ihasmail-failed-${id}`,
       data: { url: data.url },
     });

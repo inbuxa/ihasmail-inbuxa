@@ -2,8 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "rea
 import { Link, useLocation } from "wouter";
 import { Calendar, ChevronsUpDown, FolderOpen, Globe, HelpCircle, LogOut, Mail, Menu as MenuIcon, Moon, PenSquare, Plus, RefreshCw, Settings, ShieldCheck, Sun, Upload, Users, X } from "lucide-react";
 import { useSession } from "@/store/session";
-import { withBase } from "@/lib/basePath";
-import { DEFAULT_APP_NAME } from "@/lib/brand";
+import { DEFAULT_APP_NAME, brandImage } from "@/lib/brand";
 import { InbuxaWordmark } from "@/ui/InbuxaWordmark";
 import { useEffectiveTheme, useSettings } from "@/store/settings";
 import { toggleTarget } from "@/lib/palette";
@@ -148,7 +147,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <MenuIcon size={22} />
         </button>
         <Link href="/mail" className="brand">
-          <img src={withBase(appName === DEFAULT_APP_NAME ? "/img/inbuxa-mark.png" : "/img/logo.png")} alt="" />
+          <img src={brandImage(appName === DEFAULT_APP_NAME ? "/img/inbuxa-mark.png" : "/img/logo.png")} alt="" />
           {/* A product name, not a word: translated it is a different product.
               Read from the session rather than written here, so a deployment
               that set APP_NAME is called what it calls itself -- the document

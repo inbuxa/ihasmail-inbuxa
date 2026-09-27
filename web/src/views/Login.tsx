@@ -5,7 +5,7 @@ import { ApiError } from "@/jmap/client";
 import { withBase } from "@/lib/basePath";
 import { APP_VERSION } from "@/lib/version";
 import { DEFAULT_SOURCE_URL } from "@/lib/source";
-import { DEFAULT_APP_NAME } from "@/lib/brand";
+import { DEFAULT_APP_NAME, brandImage } from "@/lib/brand";
 import { t } from "@/lib/i18n";
 import { InbuxaWordmark } from "@/ui/InbuxaWordmark";
 
@@ -92,7 +92,7 @@ export function LoginPage() {
     <div className="login-page">
       <form className="login-card" onSubmit={submit}>
         <div className="logo">
-          <img src={withBase(appName === DEFAULT_APP_NAME ? "/img/inbuxa-mark.png" : "/img/logo.png")} alt="" width={120} height={126} />
+          <img src={brandImage(appName === DEFAULT_APP_NAME ? "/img/inbuxa-mark.png" : "/img/logo.png")} alt="" width={120} height={126} />
           {/* A product name, not a word: not translated, and not guessed at
               from the page it is on. INBUXA's is its wordmark. */}
           <h1 className="notranslate" translate="no">
