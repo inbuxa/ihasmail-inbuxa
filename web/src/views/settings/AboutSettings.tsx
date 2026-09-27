@@ -4,9 +4,9 @@ import { useAppName } from "@/lib/brand";
 import { apiFetch, client } from "@/jmap/client";
 import { APP_VERSION } from "@/lib/version";
 import { DEFAULT_SOURCE_URL } from "@/lib/source";
-import { withBase } from "@/lib/basePath";
 import { t, tNode } from "@/lib/i18n";
 import { InbuxaWordmark } from "@/ui/InbuxaWordmark";
+import { brandImage } from "@/lib/brand";
 
 /** ihasmail-inbuxa: which webmail node answered and which mail node it talks to (server/src/nodes.ts). */
 interface Nodes {
@@ -47,7 +47,7 @@ export function AboutSettings() {
           inbuxa's own, not APP_NAME. */}
       <p className="lead">{tNode("{inbuxa} is a complete mail suite: a mail server, the console that administers it, and this webmail, each its own program, installed together and free under the AGPL.", { inbuxa: <strong className="brand-inbuxa notranslate" translate="no">inbuxa</strong> })}</p>
       <div className="row" style={{ gap: 16, alignItems: "center", marginBottom: 16 }}>
-        <img src={withBase("/img/inbuxa-mark.png")} alt="" width={80} />
+        <img src={brandImage("/img/inbuxa-mark.png")} alt="" width={80} />
         <div>
           <InbuxaWordmark height={26} />
           {/* A product name and a version string: neither is a word to translate. */}

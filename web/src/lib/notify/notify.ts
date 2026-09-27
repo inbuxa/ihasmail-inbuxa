@@ -1,4 +1,4 @@
-import { withBase } from "../basePath";
+import { brandImage } from "@/lib/brand";
 
 let baseTitle = "inbuxa";
 let faviconCanvas: HTMLCanvasElement | null = null;
@@ -40,13 +40,13 @@ export function setUnreadBadge(count: number): void {
     if (!link) return;
     if (!baseFavicon) {
       baseFavicon = new Image();
-      baseFavicon.src = withBase("/img/favicon-64.png");
+      baseFavicon.src = brandImage("/img/favicon-64.png");
       baseFavicon.onload = () => setUnreadBadge(count);
       return;
     }
     if (!baseFavicon.complete) return;
     if (count <= 0) {
-      link.href = withBase("/img/favicon-64.png");
+      link.href = brandImage("/img/favicon-64.png");
       return;
     }
     faviconCanvas ??= document.createElement("canvas");
@@ -95,7 +95,7 @@ export function showNotification(title: string, opts: NotificationOptions & { on
   if (!("Notification" in window) || Notification.permission !== "granted") return;
   if (document.visibilityState === "visible" && document.hasFocus()) return;
   const { onClick, ...options } = opts;
-  const full = { icon: withBase("/img/icon-192.png"), badge: withBase("/img/favicon-64.png"), ...options };
+  const full = { icon: brandImage("/img/icon-192.png"), badge: brandImage("/img/favicon-64.png"), ...options };
   const viaWorker = navigator.serviceWorker?.controller ? navigator.serviceWorker.ready : null;
   if (viaWorker) {
     void viaWorker.then((reg) => reg.showNotification(title, full)).catch(() => undefined);
