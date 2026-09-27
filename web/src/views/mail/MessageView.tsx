@@ -35,7 +35,7 @@ import type { ListActions } from "./MessageList";
 import { InviteCard } from "./InviteCard";
 import { VCardCard } from "./VCardCard";
 import { AddressList, useAddressMenu } from "./AddressMenu";
-import { useSession } from "@/store/session";
+import { useSession, useViewingDelegation } from "@/store/session";
 import { useScheduled } from "@/store/scheduled";
 import { formatScheduleTime } from "@/lib/schedule";
 import { mdnDecision, refusalText } from "@/lib/mdn";
@@ -134,6 +134,8 @@ export const MessageView = memo(function MessageView({ email: e, expanded, wasUn
   const imageProxy = useSession((s) => s.session?.ihasmail?.imageProxy ?? true);
   const scheduled = useScheduled((s) => s.pending[e.id]);
   const receipt = useMemo(() => mdnDecision(e), [e]);
+  // inbuxa AL-4: a locked account sends no read receipts, not even by a delegate
+  const lockedInView = useViewingDelegation() !== null;
   const [receiptDone, setReceiptDone] = useState<"sending" | "dismissed" | null>(null);
   const cancelScheduled = useScheduled((s) => s.cancel);
 
@@ -384,7 +386,7 @@ export const MessageView = memo(function MessageView({ email: e, expanded, wasUn
               {receiptRequested && <><dt>{translate("Receipt")}</dt><dd>{receipt.offer ? translate("Requested, to {address}. Never sent automatically.", { address: receipt.to!.email }) : translate(refusalText(receipt.refusal!))}</dd></>}
             </dl>
           )}
-          {receipt.offer && settings.readReceiptPolicy !== "never" && receiptDone !== "dismissed" && (
+          {receipt.offer && settings.readReceiptPolicy !== "never" && receiptDone !== "dismissed" && !lockedInView && (
             <div className="receipt-banner" style={{ margin: "0 16px 8px" }}>
               <CheckCheck size={16} />
               <span className="grow">

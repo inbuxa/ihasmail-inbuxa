@@ -1733,6 +1733,21 @@ export const catalog: Catalog = {
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "言語モデルの見解",
     "One of several signals the spam filter weighed": "迷惑メールフィルターが考慮した複数の判断材料のひとつ",
+    // inbuxa AL-7, AL-8: a locked account handed to the reader
+    "You no longer have access to {name}. Back to your own mail.": "{name} にアクセスできなくなりました。自分のメールに戻ります。",
+    "You can't send from {name}. It was handed to you to read, not to send as.": "{name} から送信することはできません。このアカウントは閲覧のために委任されています。",
+    "This account was handed to you to read. Nothing in it can be changed.": "このアカウントは閲覧用に委任されています。内容を変更することはできません。",
+    "You can file and move mail in this account, but not delete it.": "このアカウントのメールは整理・移動できますが、削除はできません。",
+    "Read only": "閲覧のみ",
+    "Read and organize": "閲覧と整理",
+    "Full access": "フルアクセス",
+    "Locked account:": "ロックされたアカウント:",
+    "You can send as this account": "このアカウントとして送信できます",
+    "Back to my mail": "自分のメールに戻る",
+    "Send or close the message you're writing first.": "作成中のメッセージを先に送信するか閉じてください。",
+    "Mail to show": "表示するメール",
+    "My mail": "自分のメール",
+    "Locked account": "ロックされたアカウント",
   },
   plurals: {
     // ── Administration: legacy mail protocols (INBUXA) ──────────────

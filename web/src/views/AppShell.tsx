@@ -1,13 +1,16 @@
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { Calendar, ChevronsUpDown, FolderOpen, Globe, HelpCircle, LogOut, Mail, Menu as MenuIcon, Moon, PenSquare, Plus, RefreshCw, Settings, ShieldCheck, Sun, Upload, Users, X } from "lucide-react";
+import { Calendar, Check, ChevronsUpDown, FolderOpen, Globe, HelpCircle, Lock, LogOut, Mail, Menu as MenuIcon, Moon, PenSquare, Plus, RefreshCw, Settings, ShieldCheck, Sun, Upload, Users, X } from "lucide-react";
 import { useSession } from "@/store/session";
 import { DEFAULT_APP_NAME, brandImage } from "@/lib/brand";
 import { InbuxaWordmark } from "@/ui/InbuxaWordmark";
 import { useEffectiveTheme, useSettings } from "@/store/settings";
 import { toggleTarget } from "@/lib/palette";
 import { useMail } from "@/store/mail";
-import { draftFromMailto, useCompose } from "@/store/compose";
+import { composeBlocked, draftFromMailto, useCompose } from "@/store/compose";
+import { delegatedAccounts } from "@/lib/delegation";
+import { toast } from "@/ui/toast";
+import { DelegatedBar } from "./DelegatedBar";
 import { Avatar, useIsMobile } from "@/ui/misc";
 import { MenuItem, MenuSep, Popover, useMenu } from "@/ui/popover";
 import { Splitter } from "@/ui/Splitter";
@@ -130,24 +133,45 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, [openShare, navigate]);
 
   /*
-   * There is no account switcher any more.
+   * There is no general account switcher.
    *
    * It existed to reach what other people shared, and was the wrong door: it
    * moved the whole app to somebody else's account, and Stalwart advertises
    * every capability on a shared account, so mail, calendar and contacts went
    * with it and were refused. Shares are listed where they belong now -- in
-   * Files and in Contacts, beside the reader's own -- and found without anyone
-   * having to know an account switch was involved.
+   * Files and in Contacts, beside the reader's own.
+   *
+   * inbuxa AL-7 brings back one narrow door: a locked account an administrator
+   * handed to the reader. Only its mail is shown, in place of the reader's
+   * own; calendars, contacts, files and settings stay theirs. It is offered
+   * only when the session marks such an account, and only then is there
+   * anything to switch.
    */
+  const viewing = useSession((s) => s.viewing);
+  const delegated = delegatedAccounts(session);
+  const switchTo = (id: string | null) => {
+    acctMenu.close();
+    if (id === viewing) return;
+    // A message being written belongs to the account it was started in
+    if (useCompose.getState().drafts.length) {
+      toast.show(t("Send or close the message you're writing first."));
+      return;
+    }
+    useSession.getState().view(id);
+    navigate("/mail");
+  };
+  const composeOff = section !== "files" && section !== "calendar" && section !== "contacts" && composeBlocked() !== null;
 
   return (
-    <div className="app">
+    <div className={`app ${viewing ? "delegated" : ""}`}>
+      <DelegatedBar />
       <header className="topbar">
         <button className="icon-btn" aria-label={t("Menu")} onClick={() => (isMobile ? setDrawer((d) => !d) : update({ sidebarCollapsed: !collapsed }))}>
           <MenuIcon size={22} />
         </button>
-        <Link href="/mail" className="brand">
+        <Link href="/mail" className={`brand ${viewing ? "locked" : ""}`}>
           <img src={brandImage(appName === DEFAULT_APP_NAME ? "/img/inbuxa-mark.png" : "/img/logo.png")} alt="" />
+          {viewing && <Lock size={18} className="brand-lock" aria-label={t("Locked account")} />}
           {/* A product name, not a word: translated it is a different product.
               Read from the session rather than written here, so a deployment
               that set APP_NAME is called what it calls itself -- the document
@@ -186,6 +210,27 @@ export function AppShell({ children }: { children: ReactNode }) {
               </div>
             </div>
             <MenuSep />
+            {delegated.length > 0 && (
+              <>
+                <div className="hint" style={{ padding: "4px 10px" }}>{t("Mail to show")}</div>
+                <MenuItem
+                  icon={viewing ? <Mail size={16} /> : <Check size={16} />}
+                  label={t("My mail")}
+                  active={!viewing}
+                  onClick={() => switchTo(null)}
+                />
+                {delegated.map((account) => (
+                  <MenuItem
+                    key={account.id}
+                    icon={viewing === account.id ? <Check size={16} /> : <Lock size={16} />}
+                    label={<span className="notranslate" translate="no">{account.name}</span>}
+                    active={viewing === account.id}
+                    onClick={() => switchTo(account.id)}
+                  />
+                ))}
+                <MenuSep />
+              </>
+            )}
             {/* The project site. It is linked from the login screen footer, which
                 is a page a signed-in user never sees again -- so from inside the
                 app there was no way back to it.
@@ -249,6 +294,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               from the file manager and was the one thing nobody wanted there. */}
           <button
             className="compose-btn"
+            hidden={composeOff}
             onClick={() => {
               if (section === "calendar") window.dispatchEvent(new CustomEvent("ihm:new-event"));
               else if (section === "contacts") window.dispatchEvent(new CustomEvent("ihm:new-contact"));

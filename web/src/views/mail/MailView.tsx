@@ -16,6 +16,7 @@ import { LabelPicker } from "./LabelPicker";
 import type { Id } from "@/jmap/types";
 import { confirmDialog } from "@/ui/dialog";
 import { toast } from "@/ui/toast";
+import { viewingDelegation } from "@/store/session";
 import { isUnknownMailbox } from "@/lib/mailbox/mailboxRoute";
 import { scheduledMailboxIdFrom, useScheduled } from "@/store/scheduled";
 import { plural, t as translate, tNode } from "@/lib/i18n";
@@ -284,15 +285,36 @@ export function MailView({ mailboxId, threadId, search }: { mailboxId?: string; 
     [threadId, currentRowIndex, settings.autoAdvance, ids, rowThreadId, openThread, setFocusId],
   );
 
+  /*
+   * inbuxa AL-6: in a locked account handed to the reader, what their level
+   * doesn't allow says so instead of trying. Read changes nothing; organize
+   * moves and flags but never deletes, so Trash and Junk are out of reach.
+   */
+  const refused = (destroys: boolean): boolean => {
+    const delegation = viewingDelegation();
+    if (!delegation) return false;
+    if (delegation.access === "read") {
+      toast.show(translate("This account was handed to you to read. Nothing in it can be changed."));
+      return true;
+    }
+    if (destroys && delegation.access === "organize") {
+      toast.show(translate("You can file and move mail in this account, but not delete it."));
+      return true;
+    }
+    return false;
+  };
+
   const actions = useMemo(
     () => ({
       archive: async (rows?: Id[]) => {
+        if (refused(false)) return;
         const t = await targetIds(rows);
         if (!t.length) return;
         await useMail.getState().archive(t);
         afterAction(true);
       },
       trash: async (rows?: Id[]) => {
+        if (refused(true)) return;
         const t = await targetIds(rows);
         if (!t.length) return;
         const mail = useMail.getState();
@@ -315,6 +337,7 @@ export function MailView({ mailboxId, threadId, search }: { mailboxId?: string; 
         afterAction(true);
       },
       spam: async (rows?: Id[]) => {
+        if (refused(true)) return;
         const t = await targetIds(rows);
         if (!t.length) return;
         const mail = useMail.getState();
@@ -324,23 +347,28 @@ export function MailView({ mailboxId, threadId, search }: { mailboxId?: string; 
         afterAction(true);
       },
       read: async (read: boolean, rows?: Id[]) => {
+        if (refused(false)) return;
         const t = await targetIds(rows);
         if (t.length) await useMail.getState().markRead(t, read);
         useMail.getState().clearSelection();
       },
       star: async (on: boolean, rows?: Id[]) => {
+        if (refused(false)) return;
         const t = await targetIds(rows);
         if (t.length) await useMail.getState().star(t, on);
       },
       move: async (rows?: Id[]) => {
+        if (refused(false)) return;
         const t = await targetIds(rows);
         if (t.length) setMovePicker({ ids: t });
       },
       label: async (rows: Id[] | undefined, anchor: { x: number; y: number }) => {
+        if (refused(false)) return;
         const t = await targetIds(rows);
         if (t.length) setLabelPicker({ ids: t, anchor });
       },
       moveTo: async (ids: Id[], mailboxId: Id) => {
+        if (refused(false)) return;
         await useMail.getState().move(ids, mailboxId);
         afterAction(true);
       },

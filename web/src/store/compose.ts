@@ -16,6 +16,7 @@ import { settings } from "./settings";
 import { emlFilename } from "@/lib/text/emlName";
 import { fillPlaceholders, type PlaceholderContext } from "@/lib/templatePlaceholders";
 import { shareBody, type SharedContent } from "@/lib/shareTarget";
+import { delegationOf } from "@/lib/delegation";
 
 export interface ComposeAttachment {
   id: string;
@@ -170,12 +171,33 @@ function defaultIdentity(identities: Identity[], email?: Email | null): Identity
   return useMail.getState().defaultIdentity() ?? identities[0];
 }
 
+/**
+ * Why nothing can be written from the account in view, if it can't: a locked
+ * account handed to the reader without the right to send as it (inbuxa
+ * AL-8). Nothing is then saved to its Drafts either.
+ */
+export function composeBlocked(): string | null {
+  const s = useSession.getState();
+  if (!s.viewing) return null;
+  const delegation = delegationOf(s.session, s.viewing);
+  if (!delegation || delegation.sendAs) return null;
+  const name = s.session?.accounts[s.viewing]?.name ?? "";
+  return translate("You can't send from {name}. It was handed to you to read, not to send as.", { name });
+}
+
+function refuseCompose(): boolean {
+  const why = composeBlocked();
+  if (why) toast.show(why);
+  return why !== null;
+}
+
 export const useCompose = create<ComposeState>((set, get) => ({
   drafts: [],
   activeKey: null,
   pendingSends: {},
 
   open(init = {}) {
+    if (refuseCompose()) return "";
     const identities = useMail.getState().identities;
     const ident = init.identityId ? identities.find((i) => i.id === init.identityId) : useMail.getState().defaultIdentity();
     const d = blankDraft({ identityId: ident?.id ?? null, replyTo: ident?.replyTo ?? [], showReplyTo: Boolean(ident?.replyTo?.length), ...init });
@@ -201,6 +223,7 @@ export const useCompose = create<ComposeState>((set, get) => ({
    * signature from every message that started as a share.
    */
   openFromShare(share) {
+    if (refuseCompose()) return "";
     const body = shareBody(share);
     const key = get().open({ subject: share.title.trim() });
     if (body) {
@@ -212,6 +235,7 @@ export const useCompose = create<ComposeState>((set, get) => ({
   },
 
   async openDraftEmail(email) {
+    if (refuseCompose()) return "";
     const existing = get().drafts.find((d) => d.draftId === email.id);
     if (existing) {
       get().focus(existing.key);
@@ -273,6 +297,7 @@ export const useCompose = create<ComposeState>((set, get) => ({
    * both are new without anything here asking for it.
    */
   async composeAsNew(email) {
+    if (refuseCompose()) return "";
     const mail = useMail.getState();
     const full = (await mail.getEmails([email.id], true))[0] ?? email;
     const identities = mail.identities.length ? mail.identities : await mail.loadIdentities();
@@ -324,6 +349,7 @@ export const useCompose = create<ComposeState>((set, get) => ({
   },
 
   async reply(email, mode) {
+    if (refuseCompose()) return "";
     const mail = useMail.getState();
     const full = (await mail.getEmails([email.id], true))[0] ?? email;
     const identities = mail.identities.length ? mail.identities : await mail.loadIdentities();
@@ -440,6 +466,7 @@ export const useCompose = create<ComposeState>((set, get) => ({
   },
 
   forwardAsAttachment(email) {
+    if (refuseCompose()) return "";
     const accountId = useMail.getState().accountId;
     const key = get().open({
       subject: replySubject(email.subject, "Fwd"),

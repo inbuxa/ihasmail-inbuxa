@@ -1722,6 +1722,21 @@ export const catalog: Catalog = {
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "Oordeel van het taalmodel",
     "One of several signals the spam filter weighed": "Een van meerdere signalen die het spamfilter heeft meegewogen",
+    // inbuxa AL-7, AL-8: a locked account handed to the reader
+    "You no longer have access to {name}. Back to your own mail.": "U hebt geen toegang meer tot {name}. Terug naar uw eigen mail.",
+    "You can't send from {name}. It was handed to you to read, not to send as.": "U kunt niet verzenden vanuit {name}. Het account is u gegeven om te lezen, niet om namens te verzenden.",
+    "This account was handed to you to read. Nothing in it can be changed.": "Dit account is u gegeven om te lezen. Er kan niets in worden gewijzigd.",
+    "You can file and move mail in this account, but not delete it.": "U kunt mail in dit account ordenen en verplaatsen, maar niet verwijderen.",
+    "Read only": "Alleen lezen",
+    "Read and organize": "Lezen en ordenen",
+    "Full access": "Volledige toegang",
+    "Locked account:": "Vergrendeld account:",
+    "You can send as this account": "U kunt namens dit account verzenden",
+    "Back to my mail": "Terug naar mijn mail",
+    "Send or close the message you're writing first.": "Verzend of sluit eerst het bericht dat u schrijft.",
+    "Mail to show": "Mail tonen van",
+    "My mail": "Mijn mail",
+    "Locked account": "Vergrendeld account",
   },
   plurals: {
     // ── Administration: legacy mail protocols (INBUXA) ──────────────
