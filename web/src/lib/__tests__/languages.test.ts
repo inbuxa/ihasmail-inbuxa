@@ -29,17 +29,10 @@ describe("resolveUiLanguage", () => {
     expect(resolveUiLanguage("xx-XX")).toBe("en");
   });
 
-  it("carries the Beta flag until a person has signed the language off", () => {
-    // Not a completeness measure. A catalog can be word-for-word finished
-    // and still read like a machine wrote it, which is what this marks.
-    // English is the source and Dutch was signed off by a native speaker in
-    // September 2026. Every other language is unreviewed, and stays marked
-    // until a person says otherwise.
-    const reviewed = new Set(["en", "nl"]);
-    for (const l of UI_LANGUAGES) {
-      if (reviewed.has(l.tag)) expect(l.beta).toBeUndefined();
-      else expect(l.beta).toBe(true);
-    }
+  it("marks no language Beta", () => {
+    // inbuxa: every shipped language is offered without the Beta mark
+    // (John, 2026-09-27); only Dutch has been read by a native speaker.
+    for (const l of UI_LANGUAGES) expect(l.beta).toBeUndefined();
   });
 
   it("honors one that is", () => {
