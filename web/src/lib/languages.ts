@@ -35,17 +35,19 @@ export interface UiLanguage {
   beta?: boolean;
 }
 
+// inbuxa: no language is marked Beta (John, 2026-09-27). The flag and its
+// settings note stay, so public ihasmail's changes to them still apply.
 export const UI_LANGUAGES: readonly UiLanguage[] = [
   { tag: "en", name: "English" },
-  { tag: "de", name: "Deutsch", beta: true },
-  { tag: "es", name: "Español", beta: true },
-  { tag: "fr", name: "Français", beta: true },
+  { tag: "de", name: "Deutsch" },
+  { tag: "es", name: "Español" },
+  { tag: "fr", name: "Français" },
   { tag: "nl", name: "Nederlands" },
-  { tag: "pt-BR", name: "Português (Brasil)", beta: true },
-  { tag: "ja", name: "日本語", beta: true },
-  { tag: "ru", name: "Русский", beta: true },
-  { tag: "uk", name: "Українська", beta: true },
-  { tag: "zh-Hans", name: "简体中文", beta: true },
+  { tag: "pt-BR", name: "Português (Brasil)" },
+  { tag: "ja", name: "日本語" },
+  { tag: "ru", name: "Русский" },
+  { tag: "uk", name: "Українська" },
+  { tag: "zh-Hans", name: "简体中文" },
 ];
 
 /** Where to report a bad translation. Beta languages depend on it. */
