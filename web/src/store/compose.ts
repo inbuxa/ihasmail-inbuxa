@@ -4,7 +4,8 @@ import type { Email, EmailAddress, EmailBodyPart, Id, Identity, SetResponse } fr
 import { formatFullDate, uid } from "@/lib/format";
 import { formatAddress, parseMailto, sameAddress, uniqueAddresses } from "@/lib/address";
 import { escapeHtml, htmlToText, quoteText, replySubject, textToHtml } from "@/lib/text/text";
-import { sanitizeEmailHtml, sanitizeEditorHtml } from "@/lib/text/html";
+import { hasHtmlAlternative, sanitizeEmailHtml, sanitizeEditorHtml } from "@/lib/text/html";
+import { remoteImagesAllowed, restoreBlockedImages, unproxyImages } from "@/lib/mail/remoteImages";
 import { toast } from "@/ui/toast";
 import { useMail, FULL_PROPS, BODY_PROPS } from "./mail";
 import { useSession } from "./session";
@@ -13,6 +14,7 @@ import { formatScheduleTime, holdUntil } from "@/lib/schedule";
 import { t as translate } from "@/lib/i18n";
 import { BASE_PATH } from "@/lib/basePath";
 import { settings } from "./settings";
+import { useContacts } from "./contacts";
 import { emlFilename } from "@/lib/text/emlName";
 import { fillPlaceholders, type PlaceholderContext } from "@/lib/templatePlaceholders";
 import { shareBody, type SharedContent } from "@/lib/shareTarget";
@@ -76,6 +78,20 @@ export interface Draft {
   /** Original identity signature HTML currently embedded, to replace on identity switch. */
   signatureHtml: string;
   replyMode: "reply" | "replyAll" | "forward" | null;
+  /**
+   * The quoted message as it was prepared in each format, kept so that
+   * switching format re-attaches the original rather than a conversion of
+   * whatever the other format flattened it into. Empty on a draft that quotes
+   * nothing.
+   */
+  quoteHtml: string;
+  quoteText: string;
+  /**
+   * The format the message being answered was written in, when it is not the
+   * one this draft opened in (#407). The composer offers the switch; answering
+   * it either way, or dismissing it, clears this.
+   */
+  formatOffer: "html" | "text" | null;
   mailboxIdOnSend?: Id | null;
   /** When set, hand the message to the server held until this instant. */
   sendAt: number | null;
@@ -146,9 +162,37 @@ function blankDraft(init: Partial<Draft> = {}): Draft {
     error: null,
     signatureHtml: "",
     replyMode: null,
+    quoteHtml: "",
+    quoteText: "",
+    formatOffer: null,
     sendAt: null,
     ...init,
   };
+}
+
+/**
+ * Whether this message's remote images may be fetched into a composer.
+ *
+ * The same question the reader answered, asked with the same inputs: the
+ * policy, the trusted senders, whether the sender is a contact, and whether
+ * the reader pressed "Show images" on this message.
+ */
+/** Whether this deployment fetches remote images through its own server. */
+function imageProxyOn(): boolean {
+  return useSession.getState().session?.ihasmail?.imageProxy ?? true;
+}
+
+function remoteImagesForMessage(email: Email): boolean {
+  const s = settings();
+  const from = email.from?.[0]?.email;
+  const contacts = useContacts.getState();
+  return remoteImagesAllowed({
+    from,
+    policy: s.imagePolicy,
+    trusted: s.trustedImageSenders,
+    inContacts: Boolean(from && contacts.loaded && contacts.lookupByEmail(from)),
+    shown: Boolean(useMail.getState().imagesShown[email.id]),
+  });
 }
 
 export function signatureBlock(identity: Identity | undefined, format: "html" | "text"): string {
@@ -267,7 +311,7 @@ export const useCompose = create<ComposeState>((set, get) => ({
       showCc: Boolean(full.cc?.length),
       showBcc: Boolean(full.bcc?.length),
       subject: full.subject ?? "",
-      html: html ? sanitizeEmailHtml(html, { cidMap, allowRemote: true, dropStyleBlocks: true }).html : textToHtml(text).replace(/\n/g, "<br>"),
+      html: html ? sanitizeEmailHtml(html, { cidMap, allowRemote: remoteImagesForMessage(full), proxyRemote: imageProxyOn(), dropStyleBlocks: true }).html : textToHtml(text).replace(/\n/g, "<br>"),
       text: text || (html ? htmlToText(html) : ""),
       format: html ? "html" : settings().composeFormat,
       attachments,
@@ -334,7 +378,7 @@ export const useCompose = create<ComposeState>((set, get) => ({
       showCc: Boolean(full.cc?.length),
       showBcc: Boolean(full.bcc?.length),
       subject: full.subject ?? "",
-      html: html ? sanitizeEmailHtml(html, { cidMap, allowRemote: true, dropStyleBlocks: true }).html : textToHtml(text).replace(/\n/g, "<br>"),
+      html: html ? sanitizeEmailHtml(html, { cidMap, allowRemote: remoteImagesForMessage(full), proxyRemote: imageProxyOn(), dropStyleBlocks: true }).html : textToHtml(text).replace(/\n/g, "<br>"),
       text: text || (html ? htmlToText(html) : ""),
       format: html ? "html" : settings().composeFormat,
       attachments,
@@ -392,6 +436,19 @@ export const useCompose = create<ComposeState>((set, get) => ({
         // Addressed only to myself, or only in Cc: there is still somebody this
         // is a reply to, and an empty To is not it.
         if (!to.length) { to = cc.length ? cc : withoutOwn(full.cc ?? []); cc = []; }
+        /*
+         * Nobody but me on the message, and a Reply-To pointing somewhere that
+         * is not mine: that address is who this is really from.
+         *
+         * A contact form is the shape of it -- From and To are both the site's
+         * own mailbox, and the person who filled the form in is in Reply-To.
+         * The address test above calls that mine, correctly as far as it goes,
+         * and the fallback then addressed the reply to my own desk (#415).
+         *
+         * After the Cc, not before it: a message I really did send carries my
+         * own Reply-To, and somebody I actually wrote to beats it.
+         */
+        if (!to.length) to = withoutOwn(full.replyTo ?? []);
         if (!to.length) to = uniqueAddresses([...(full.to ?? []), ...(full.cc ?? [])]);
       } else {
         to = uniqueAddresses(full.replyTo?.length ? full.replyTo : (full.from ?? []));
@@ -405,6 +462,13 @@ export const useCompose = create<ComposeState>((set, get) => ({
     const textPart = full.textBody?.[0];
     const origHtml = htmlPart?.partId ? (full.bodyValues?.[htmlPart.partId]?.value ?? "") : "";
     const origText = textPart?.partId ? (full.bodyValues?.[textPart.partId]?.value ?? "") : "";
+    /*
+     * What the message being answered was really written in. `htmlBody` is
+     * derived, so its presence proves nothing -- hasHtmlAlternative() reads the
+     * part's own type. Getting this wrong would offer every plain-text message
+     * a switch to rich text it does not need.
+     */
+    const origFormat = hasHtmlAlternative(htmlPart, origHtml) ? "html" : "text";
     const accountId = mail.accountId!;
     const attachments: ComposeAttachment[] = [];
     const cidMap: Record<string, string> = {};
@@ -415,9 +479,21 @@ export const useCompose = create<ComposeState>((set, get) => ({
         attachments.push({ id: uid("a"), name: a.name ?? "attachment", type: a.type, size: a.size, blobId: a.blobId, progress: 100, error: null, cid: a.cid ?? undefined, inline });
       }
     }
+    /*
+     * Quoting renders the message a second time, so the reader's decision
+     * about its remote images applies here too: a quote that fetched what
+     * they declined would report the message read to whoever was counting
+     * (#410). Blocked images keep their address and get it back on the way
+     * out, so the recipient's copy is the quote as its sender wrote it.
+     */
+    const allowRemote = remoteImagesForMessage(full);
+    // Fetched through this server while the reply is written, as reading the
+    // message does, and pointed back at their own addresses on the way out
+    // (#412).
+    const proxyRemote = imageProxyOn();
     // Inline images are shown via their blob URLs in the editor and converted back to cid: at send time.
     const quotedHtmlBody = origHtml
-      ? sanitizeEmailHtml(origHtml, { cidMap, allowRemote: true, proxyRemote: false, dropStyleBlocks: true }).html
+      ? sanitizeEmailHtml(origHtml, { cidMap, allowRemote, proxyRemote, dropStyleBlocks: true }).html
       : textToHtml(origText).replace(/\n/g, "<br>");
     const fromStr = escapeHtml((full.from ?? []).map(formatAddress).join(", "));
     const date = formatFullDate(full.receivedAt);
@@ -460,6 +536,9 @@ export const useCompose = create<ComposeState>((set, get) => ({
       relatedKeyword: mode === "forward" ? "$forwarded" : "$answered",
       signatureHtml: sigHtml,
       replyMode: mode,
+      quoteHtml,
+      quoteText: quoteTxt,
+      formatOffer: origFormat === s.composeFormat ? null : origFormat,
     });
     set((st) => ({ drafts: [...st.drafts, d], activeKey: d.key }));
     return d.key;
@@ -781,7 +860,9 @@ export async function buildEmailObject(d: Draft, opts: { forSend: boolean; mailb
   if (!ident) throw new Error(translate("No sending identity available"));
   const from: EmailAddress = { name: ident.name || null, email: ident.email };
 
-  let html = d.format === "html" ? d.html : "";
+  // Images blocked when the message was quoted keep their address; the copy
+  // that leaves carries it, and the recipient's client decides for itself.
+  let html = d.format === "html" ? unproxyImages(restoreBlockedImages(d.html)) : "";
   const text = d.format === "html" ? htmlToText(d.html) : d.text;
 
   // Inline attachments shown via blob URLs in the editor → back to cid: references.
