@@ -37,6 +37,24 @@ export function legacyProtocolsOff(session: JmapSession | null, accountId: Id | 
   return cap?.legacyProtocols === "disabled";
 }
 
+/** The protocols the server can switch off one at a time, as it names them. */
+const SWITCHED = ["imap", "pop3", "manageSieve"] as const;
+const PROTOCOL_NAMES: Record<string, string> = { imap: "IMAP", pop3: "POP3", manageSieve: "ManageSieve" };
+
+/**
+ * Which of IMAP, POP3 and ManageSieve are off for this account, by name, when
+ * only some are (INBUXA legacy-protocols, one switch per protocol). Empty when
+ * none are, when all are (see `legacyProtocolsOff`), and from a server that
+ * doesn't say which (`legacyAllowed`).
+ */
+export function legacyProtocolsPartlyOff(session: JmapSession | null, accountId: Id | null): string[] {
+  if (!session || !accountId || legacyProtocolsOff(session, accountId)) return [];
+  const cap = session.accounts[accountId]?.accountCapabilities?.[INBUXA_CAP] as { legacyAllowed?: unknown } | undefined;
+  if (!Array.isArray(cap?.legacyAllowed)) return [];
+  const allowed = cap.legacyAllowed;
+  return SWITCHED.filter((p) => !allowed.includes(p)).map((p) => PROTOCOL_NAMES[p] ?? p);
+}
+
 export class JmapMethodError extends Error {
   constructor(
     public readonly method: string,

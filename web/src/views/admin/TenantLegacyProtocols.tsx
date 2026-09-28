@@ -68,10 +68,15 @@ export function TenantLegacyProtocols({ tenantId, tenantName }: { tenantId: stri
       <p>
         {state.off
           ? t("Off for {tenant}. Only {app} and JMAP apps can sign in to its domains.", { tenant: tenantName, app })
-          : t("On for {tenant}. Mail apps can use IMAP, POP3 and ManageSieve on its domains.", { tenant: tenantName })}
+          : state.partlyOff.length > 0
+            ? t("Some are off for {tenant}: {protocols}. Switch them one at a time in the administration console.", {
+                tenant: tenantName,
+                protocols: state.partlyOff.join(", "),
+              })
+            : t("On for {tenant}. Mail apps can use IMAP, POP3 and ManageSieve on its domains.", { tenant: tenantName })}
       </p>
 
-      {canChange && state.off && (
+      {canChange && (state.off || state.partlyOff.length > 0) && (
         <button className="btn" disabled={busy} onClick={() => void turn(false)}>
           {t("Turn legacy protocols back on")}
         </button>

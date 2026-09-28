@@ -3,8 +3,8 @@ import { CONFIRM_PHRASE, impactEntries, parseTenantLegacy, phraseMatches } from 
 
 describe("a tenant's legacy mail protocols switch, as the server sends it", () => {
   it("reads the switch, and tells an older server from nobody", () => {
-    expect(parseTenantLegacy({ legacyProtocols: "disabled", recentLegacyUse: [] })).toEqual({ off: true, recent: [] });
-    expect(parseTenantLegacy({ legacyProtocols: "enabled" })).toEqual({ off: false, recent: null });
+    expect(parseTenantLegacy({ legacyProtocols: "disabled", recentLegacyUse: [] })).toEqual({ off: true, partlyOff: [], recent: [] });
+    expect(parseTenantLegacy({ legacyProtocols: "enabled" })).toEqual({ off: false, partlyOff: [], recent: null });
   });
 
   it("puts each account on the panel once, with every protocol and its latest use", () => {

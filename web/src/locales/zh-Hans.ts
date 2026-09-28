@@ -1734,6 +1734,10 @@ export const catalog: Catalog = {
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "语言模型的判断",
     "One of several signals the spam filter weighed": "垃圾邮件过滤考虑的多个信号之一",
+    // inbuxa: legacy mail protocols, one switch per protocol
+    "Your organization has turned off {protocols} for mail apps. Mail apps that use it can't connect to this account; others still can.": "您的组织已为邮件应用关闭 {protocols}。使用它的邮件应用无法连接到此账户；其他应用仍可连接。",
+    "Some legacy mail protocols are off for your organization: {protocols}.": "您的组织已关闭部分传统邮件协议：{protocols}。",
+    "Some are off for {tenant}: {protocols}. Switch them one at a time in the administration console.": "{tenant} 已关闭部分协议：{protocols}。请在管理控制台中逐个开启或关闭。",
     // inbuxa: deleting a person is the console's (audit-hold-lock spec)
     "Deleting, locking and legal holds are done in the administration console, which records why and keeps what a hold covers.": "删除、锁定和法律保留均在管理控制台中进行，控制台会记录原因，并保留保留范围内的内容。",
     "Open in the console": "在控制台中打开",

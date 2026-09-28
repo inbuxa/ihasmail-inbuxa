@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { ArrowDownToLine, ArrowUpFromLine, ExternalLink, Globe, Hourglass, LayoutDashboard, MemoryStick, RefreshCw, ShieldCheck, Users } from "lucide-react";
-import { legacyProtocolsOff } from "@/jmap/client";
+import { legacyProtocolsOff, legacyProtocolsPartlyOff } from "@/jmap/client";
 import { useAppName } from "@/lib/brand";
 import { adminSections, dashboardCards, type DashboardCard } from "@/lib/admin/adminAccess";
 import { balancedColumns, countObjects, DASHBOARD_WINDOW_MS, isRefused, loadMetrics, summarizeMetrics, type MessageStats } from "@/lib/admin/adminDashboard";
@@ -38,6 +38,7 @@ export function AdminDashboard() {
   const perms = usePermissions();
   const adminUrl = useSession((s) => s.session?.ihasmail?.server?.adminUrl ?? null);
   const legacyOff = useSession((s) => legacyProtocolsOff(s.session, s.accountId));
+  const legacyPartlyOff = useSession((s) => legacyProtocolsPartlyOff(s.session, s.accountId).join(", "));
   const app = useAppName();
   const cards = dashboardCards(perms);
   const sections = adminSections(perms);
@@ -111,6 +112,13 @@ export function AdminDashboard() {
         <p className="admin-notice">
           <ShieldCheck size={16} />
           <span>{t("Legacy mail protocols are off for your organization. Only {app} and JMAP apps can sign in.", { app })}</span>
+        </p>
+      )}
+      {legacyPartlyOff && (
+        // INBUXA: one switch per protocol, some of them off
+        <p className="admin-notice">
+          <ShieldCheck size={16} />
+          <span>{t("Some legacy mail protocols are off for your organization: {protocols}.", { protocols: legacyPartlyOff })}</span>
         </p>
       )}
       {shown.length ? (
