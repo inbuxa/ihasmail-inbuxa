@@ -1723,6 +1723,9 @@ export const catalog: Catalog = {
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "Думка мовної моделі",
     "One of several signals the spam filter weighed": "Одна з кількох ознак, які врахував спам-фільтр",
+    // inbuxa: deleting a person is the console's (audit-hold-lock spec)
+    "Deleting, locking and legal holds are done in the administration console, which records why and keeps what a hold covers.": "Видалення, блокування та юридичне утримання виконуються в консолі адміністрування: вона записує причину й зберігає все, що охоплює утримання.",
+    "Open in the console": "Відкрити в консолі",
     // inbuxa AL-7, AL-8: a locked account handed to the reader
     "You no longer have access to {name}. Back to your own mail.": "У вас більше немає доступу до {name}. Повертаємося до вашої пошти.",
     "You can't send from {name}. It was handed to you to read, not to send as.": "Ви не можете надсилати листи від імені {name}. Обліковий запис передано вам для читання, а не для надсилання.",

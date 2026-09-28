@@ -48,7 +48,7 @@ describe("the account sheet", () => {
     await act(async () => {
       root.render(
         <Router hook={hook}>
-          <AccountSheet account={a} ctx={ctx} onClose={() => {}} onChanged={() => {}} onCreated={() => {}} onDeleted={() => {}} />
+          <AccountSheet account={a} ctx={ctx} onClose={() => {}} onChanged={() => {}} onCreated={() => {}} />
         </Router>,
       );
     });
@@ -89,7 +89,20 @@ describe("the account sheet", () => {
     expect(host.querySelector('a[href="/settings/security"]')).not.toBeNull();
     expect(button(host, "Set a new password")).toBeUndefined();
     expect((host.querySelector('select[aria-label="Role"]') as HTMLSelectElement).disabled).toBe(true);
-    expect(button(host, "Delete account")?.disabled).toBe(true);
+    expect(host.textContent).not.toContain("Delete account");
+    expect(host.textContent).toContain("administration console");
+  });
+
+  it("sends deleting a person to the console, opened on that account (inbuxa)", async () => {
+    signIn([...HELPDESK, "sysAccountDestroy"]);
+    const s = useSession.getState().session!;
+    useSession.setState({
+      session: { ...s, ihasmail: { ...s.ihasmail, server: { ...(s.ihasmail?.server ?? {}), adminUrl: "https://admin.example.com/" } } } as never,
+    });
+    await render(account({ id: "k7" }));
+    expect(host.textContent).not.toContain("Delete account");
+    const link = host.querySelector('a[href="https://admin.example.com/Management/x:Account/User/k7"]');
+    expect(link?.textContent).toContain("Open in the console");
   });
 });
 
@@ -108,7 +121,7 @@ describe("an account's tenant", () => {
   const render = async (a: DirectoryAccount) => {
     const { hook } = memoryLocation({ path: `/admin/accounts/${a.id}` });
     await act(async () => {
-      root.render(<Router hook={hook}><AccountSheet account={a} ctx={tenantCtx} onClose={() => {}} onChanged={() => {}} onCreated={() => {}} onDeleted={() => {}} /></Router>);
+      root.render(<Router hook={hook}><AccountSheet account={a} ctx={tenantCtx} onClose={() => {}} onChanged={() => {}} onCreated={() => {}} /></Router>);
     });
   };
   beforeEach(() => {

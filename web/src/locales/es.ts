@@ -1727,6 +1727,9 @@ export const catalog: Catalog = {
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "Opinión del modelo de lenguaje",
     "One of several signals the spam filter weighed": "Una de varias señales que el filtro de spam ha tenido en cuenta",
+    // inbuxa: deleting a person is the console's (audit-hold-lock spec)
+    "Deleting, locking and legal holds are done in the administration console, which records why and keeps what a hold covers.": "Eliminar, bloquear y las retenciones legales se gestionan en la consola de administración, que registra el motivo y conserva lo que cubre una retención.",
+    "Open in the console": "Abrir en la consola",
     // inbuxa AL-7, AL-8: a locked account handed to the reader
     "You no longer have access to {name}. Back to your own mail.": "Ya no tiene acceso a {name}. Vuelve a su propio correo.",
     "You can't send from {name}. It was handed to you to read, not to send as.": "No puede enviar desde {name}. Se le entregó para leerla, no para enviar en su nombre.",
