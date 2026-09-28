@@ -270,7 +270,8 @@ export const useContacts = create<ContactsState>((set, get) => ({
     // The reader's own, not whichever account is selected: a shared address
     // book is shown beside theirs rather than instead of it, so nothing here
     // should move when the switcher does.
-    const accountId = useSession.getState().ownAccountFor(CAP.contacts);
+    // inbuxa AL-7: or the locked account in view, the whole of it
+    const accountId = useSession.getState().viewAccountFor(CAP.contacts);
     const available = Boolean(accountId && client.hasCapability(CAP.contacts));
     if (accountId !== get().accountId) set({ accountId, books: {}, cards: {}, cardState: null, loaded: false, selection: { accountId: null, bookId: "all" } });
     set({ available });
@@ -300,7 +301,7 @@ export const useContacts = create<ContactsState>((set, get) => ({
    */
   async loadShared() {
     const session = useSession.getState();
-    const own = session.ownAccountFor(CAP.contacts);
+    const own = session.viewAccountFor(CAP.contacts);
     const s = session.session;
     const accounts = Object.entries(s?.accounts ?? {}).filter(([id, a]) => a.isPersonal === false && id !== own);
     if (!accounts.length) {

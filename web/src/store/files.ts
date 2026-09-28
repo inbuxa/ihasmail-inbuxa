@@ -139,13 +139,16 @@ export const useFiles = create<FilesState>((set, get) => ({
 
   async init() {
     const session = useSession.getState();
-    const ownAccountId = session.ownAccountFor(CAP.filenode);
+    // inbuxa AL-7: home is the locked account in view, the whole of it
+    const ownAccountId = session.viewAccountFor(CAP.filenode);
     const available = Boolean(ownAccountId && client.hasCapability(CAP.filenode));
     // Stay where the reader is if the session still offers that account;
-    // whether it still holds files is `discoverShared`'s to say.
+    // whether it still holds files is `discoverShared`'s to say. A new home
+    // (a locked account opened or left) starts there.
     const browsing = get().accountId;
     const offered = Object.entries(session.session?.accounts ?? {}).some(([id, a]) => id === browsing && a.isPersonal === false);
-    if (!(browsing && (browsing === ownAccountId || offered))) set(emptyForAccount(ownAccountId));
+    const moved = ownAccountId !== get().ownAccountId;
+    if (moved || !(browsing && (browsing === ownAccountId || offered))) set(emptyForAccount(ownAccountId));
     set({ available, ownAccountId });
   },
 

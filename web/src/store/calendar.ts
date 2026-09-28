@@ -404,7 +404,8 @@ export const useCalendar = create<CalendarState>((set, get) => ({
 
   async init() {
     // The reader's own: a shared calendar is shown beside theirs, not instead.
-    const accountId = useSession.getState().ownAccountFor(CAP.calendars);
+    // inbuxa AL-7: or the locked account in view, the whole of it
+    const accountId = useSession.getState().viewAccountFor(CAP.calendars);
     const available = Boolean(accountId && client.hasCapability(CAP.calendars));
     if (accountId !== get().accountId) set({ accountId, calendars: {}, events: {}, ranges: {} });
     set({ available });
@@ -431,7 +432,7 @@ export const useCalendar = create<CalendarState>((set, get) => ({
    */
   async loadSharedCalendars() {
     const session = useSession.getState();
-    const own = session.ownAccountFor(CAP.calendars);
+    const own = session.viewAccountFor(CAP.calendars);
     const accounts = Object.entries(session.session?.accounts ?? {}).filter(([id, a]) => a.isPersonal === false && id !== own);
     // Every account at once, in one request, and listed in the session's order.
     const answers = await Promise.all(
