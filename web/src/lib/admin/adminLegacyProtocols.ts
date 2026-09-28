@@ -34,7 +34,10 @@ export interface RecentUse {
 }
 
 export interface TenantLegacy {
+  /** All of IMAP, POP3 and ManageSieve off: the kill-all's state. */
   off: boolean;
+  /** When only some are off, which, by name; set one at a time in the console. */
+  partlyOff: string[];
   /** Null from a server too old to say who uses legacy apps -- not the same as nobody. */
   recent: RecentUse[] | null;
 }
@@ -49,8 +52,13 @@ function parseRecent(raw: unknown): RecentUse[] | null {
   });
 }
 
+const PROTOCOL_NAMES: [string, string][] = [["imap", "IMAP"], ["pop3", "POP3"], ["manageSieve", "ManageSieve"]];
+
 export function parseTenantLegacy(raw: Record<string, unknown>): TenantLegacy {
-  return { off: raw.legacyProtocols === "disabled", recent: parseRecent(raw.recentLegacyUse) };
+  const off = raw.legacyProtocols === "disabled";
+  // An older server sends only legacyProtocols, which stands for all three.
+  const partlyOff = off ? [] : PROTOCOL_NAMES.filter(([key]) => raw[key] === "disabled").map(([, name]) => name);
+  return { off, partlyOff, recent: parseRecent(raw.recentLegacyUse) };
 }
 
 /** The tenant's switch, or null where the server has none (not INBUXA, or too old). */

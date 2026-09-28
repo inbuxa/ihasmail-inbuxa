@@ -62,7 +62,7 @@ describe("a tenant's legacy mail protocols switch", () => {
   });
 
   it("shows who would notice and what it means, then asks for the exact phrase", async () => {
-    api.state = { off: false, recent: [{ accountId: "a", name: "maria@acme.example", protocol: "imap", lastUsedAt: Date.now() - 2 * 86400_000 }] };
+    api.state = { off: false, partlyOff: [], recent: [{ accountId: "a", name: "maria@acme.example", protocol: "imap", lastUsedAt: Date.now() - 2 * 86400_000 }] };
     signIn(["sysDomainGet", "sysDomainUpdate"]);
     await render();
     await act(async () => button(host, "Turn off legacy protocols…")!.click());
@@ -84,7 +84,7 @@ describe("a tenant's legacy mail protocols switch", () => {
   });
 
   it("turns it back on with one click", async () => {
-    api.state = { off: true, recent: [] };
+    api.state = { off: true, partlyOff: [], recent: [] };
     signIn(["sysDomainGet", "sysDomainUpdate"]);
     await render();
     await act(async () => button(host, "Turn legacy protocols back on")!.click());
@@ -92,7 +92,7 @@ describe("a tenant's legacy mail protocols switch", () => {
   });
 
   it("shows the state but no switch to someone who can't change domains", async () => {
-    api.state = { off: true, recent: null };
+    api.state = { off: true, partlyOff: [], recent: null };
     signIn(["sysDomainGet"]);
     await render();
     expect(host.textContent).toContain("Off for Acme Corp");

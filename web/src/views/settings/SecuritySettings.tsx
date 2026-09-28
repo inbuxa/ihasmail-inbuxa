@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAppName } from "@/lib/brand";
 import { Copy, KeyRound, ShieldCheck, Smartphone } from "lucide-react";
-import { apiFetch, ApiError, legacyProtocolsOff } from "@/jmap/client";
+import { apiFetch, ApiError, legacyProtocolsOff, legacyProtocolsPartlyOff } from "@/jmap/client";
 import { useSession } from "@/store/session";
 import { formatFullDate } from "@/lib/format";
 import { toast } from "@/ui/toast";
@@ -87,6 +87,14 @@ export function SecuritySettings() {
       {legacyProtocolsOff(session, accountId) && (
         <p className="info-box mb-16">
           {t("Your organization allows only {app} and JMAP apps, so phone and desktop mail apps can't connect to this account.", { app: appName })}
+        </p>
+      )}
+      {legacyProtocolsPartlyOff(session, accountId).length > 0 && (
+        // INBUXA: one switch per protocol; mail apps using the rest still work
+        <p className="info-box mb-16">
+          {t("Your organization has turned off {protocols} for mail apps. Mail apps that use it can't connect to this account; others still can.", {
+            protocols: legacyProtocolsPartlyOff(session, accountId).join(", "),
+          })}
         </p>
       )}
       {unsupported ? (
