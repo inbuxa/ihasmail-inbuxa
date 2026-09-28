@@ -1734,6 +1734,9 @@ export const catalog: Catalog = {
     // ── Spam filter: the language model's opinion (inbuxa) ──────────
     "Language model's opinion": "语言模型的判断",
     "One of several signals the spam filter weighed": "垃圾邮件过滤考虑的多个信号之一",
+    // inbuxa: deleting a person is the console's (audit-hold-lock spec)
+    "Deleting, locking and legal holds are done in the administration console, which records why and keeps what a hold covers.": "删除、锁定和法律保留均在管理控制台中进行，控制台会记录原因，并保留保留范围内的内容。",
+    "Open in the console": "在控制台中打开",
     // inbuxa AL-7, AL-8: a locked account handed to the reader
     "You no longer have access to {name}. Back to your own mail.": "您已无法访问 {name}。已返回您自己的邮件。",
     "You can't send from {name}. It was handed to you to read, not to send as.": "您不能从 {name} 发送邮件。该账户交给您是为了阅读，而不是代其发送。",

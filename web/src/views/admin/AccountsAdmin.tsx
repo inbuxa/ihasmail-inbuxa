@@ -217,10 +217,6 @@ export function AccountsAdmin({ selectedId }: { selectedId?: string }) {
             changed();
             navigate(`/admin/accounts/${id}`);
           }}
-          onDeleted={() => {
-            changed();
-            close();
-          }}
         />
       )}
     </div>

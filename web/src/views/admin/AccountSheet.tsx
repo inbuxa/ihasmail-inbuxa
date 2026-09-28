@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Copy, Dices, KeyRound, Lock, Plus, Trash2, X } from "lucide-react";
+import { Copy, Dices, ExternalLink, KeyRound, Lock, Plus, X } from "lucide-react";
 import {
   ADMIN_BASELINE,
   can,
@@ -12,7 +12,6 @@ import {
   aliasList,
   createAccount,
   describeDirectoryError,
-  destroyAccount,
   hasPassword,
   passwordPatch,
   quotasWithDisk,
@@ -25,7 +24,7 @@ import { formatSize } from "@/lib/format";
 import { t, tNode } from "@/lib/i18n";
 import { Link } from "wouter";
 import { Avatar } from "@/ui/misc";
-import { Dialog } from "@/ui/dialog";
+import { useSession } from "@/store/session";
 import { toast } from "@/ui/toast";
 import { isSelf, roleName, type DirectoryContext } from "./directoryContext";
 import { usePermissions } from "./usePermissions";
@@ -39,7 +38,6 @@ interface Props {
   onClose: () => void;
   onChanged: () => void;
   onCreated: (id: string) => void;
-  onDeleted: () => void;
 }
 
 /** A role as one select value: "User", "Admin", or "custom:<ids>". */
@@ -71,7 +69,7 @@ const bytesOf = (gib: string) => {
  * a password and a delete are their own calls, because each is a decision of
  * its own and should never ride along with a renamed display name.
  */
-export function AccountSheet({ account, ctx, onClose, onChanged, onCreated, onDeleted }: Props) {
+export function AccountSheet({ account, ctx, onClose, onChanged, onCreated }: Props) {
   const perms = usePermissions();
   const creating = account === null;
   const self = account ? isSelf(account, ctx) : false;
@@ -288,9 +286,7 @@ export function AccountSheet({ account, ctx, onClose, onChanged, onCreated, onDe
 
         {error && <p className="admin-notice error" role="alert">{error}</p>}
 
-        {!creating && can(perms, "Account", "Destroy") && (
-          <DeleteAccount account={account} blocked={self ? t("You can't delete the account you're signed in with.") : locked ? t("This account has permissions yours doesn't.") : null} onDeleted={onDeleted} />
-        )}
+        {!creating && can(perms, "Account", "Destroy") && <DeleteInConsole accountId={account.id} />}
       </div>
 
       {editable && (
@@ -433,59 +429,24 @@ export function Aliases({ aliases, setAliases, editable, domains, defaultDomain,
   );
 }
 
-function DeleteAccount({ account, blocked, onDeleted }: { account: DirectoryAccount; blocked: string | null; onDeleted: () => void }) {
-  const [open, setOpen] = useState(false);
-  const [typed, setTyped] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const address = account.emailAddress ?? account.name;
+/**
+ * inbuxa: deleting a person's account is the console's, beside locking it
+ * and legal holds: it asks why, for the audit log, and says when a hold
+ * keeps the data. Only the pointer is here.
+ */
+function DeleteInConsole({ accountId }: { accountId: string }) {
+  const adminUrl = useSession((s) => s.session?.ihasmail?.server?.adminUrl ?? null);
   return (
     <>
       <h3>{t("Delete")}</h3>
       <div className="admin-danger">
-        <p>{blocked ?? t("Deletes the mailbox and everything in it.")}</p>
-        <button className="btn btn-sm admin-danger-btn" disabled={!!blocked} onClick={() => { setTyped(""); setError(null); setOpen(true); }}>
-          <Trash2 size={14} /> {t("Delete account…")}
-        </button>
+        <p>{t("Deleting, locking and legal holds are done in the administration console, which records why and keeps what a hold covers.")}</p>
+        {adminUrl && (
+          <a className="btn btn-sm" href={`${adminUrl.replace(/\/$/, "")}/Management/x:Account/User/${accountId}`} target="_blank" rel="noopener noreferrer">
+            <ExternalLink size={14} /> {t("Open in the console")}
+          </a>
+        )}
       </div>
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        title={t("Delete {address}?", { address })}
-        size="sm"
-        footer={
-          <>
-            <button className="btn" onClick={() => setOpen(false)}>{t("Cancel")}</button>
-            <button
-              className="btn btn-danger"
-              disabled={busy || typed.trim().toLowerCase() !== address.toLowerCase()}
-              onClick={async () => {
-                setBusy(true);
-                setError(null);
-                try {
-                  await destroyAccount(account.id);
-                  toast.success(t("Deleted {address}", { address }));
-                  setOpen(false);
-                  onDeleted();
-                } catch (err) {
-                  setError(describeDirectoryError(err));
-                } finally {
-                  setBusy(false);
-                }
-              }}
-            >
-              {t("Delete account")}
-            </button>
-          </>
-        }
-      >
-        <p style={{ marginTop: 0 }}>{t("This deletes the mail, calendars, contacts and files in this account. The server removes them in the background, and it can't be undone.")}</p>
-        <div className="field">
-          <label htmlFor="admin-delete-confirm">{t("Type {address} to confirm", { address })}</label>
-          <input id="admin-delete-confirm" className="input notranslate" translate="no" value={typed} autoComplete="off" spellCheck={false} onChange={(e) => setTyped(e.target.value)} />
-        </div>
-        {error && <p className="admin-notice error" role="alert">{error}</p>}
-      </Dialog>
     </>
   );
 }
