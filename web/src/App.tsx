@@ -258,8 +258,8 @@ function AuthedApp() {
   }, [accountId]);
 
   /*
-   * inbuxa AL-7: a delegated account's mail, when it comes into view, and the
-   * reader's own when it goes back. Push carries nothing for an account only
+   * inbuxa AL-7: a delegated account, the whole of it, when it comes into
+   * view, and the reader's own when it goes back. Push carries nothing for an account only
    * shared with the reader, so while one is open it is polled.
    */
   const viewedOnce = useRef(false);
@@ -271,6 +271,10 @@ function AuthedApp() {
     const mail = useMail.getState();
     void mail.loadMailboxes();
     void mail.loadIdentities();
+    // The whole account follows: calendar, contacts and files too
+    void useCalendar.getState().init();
+    void useContacts.getState().init();
+    void useFiles.getState().init();
     if (!viewing) return;
     const poll = window.setInterval(() => {
       if (document.visibilityState === "visible") {

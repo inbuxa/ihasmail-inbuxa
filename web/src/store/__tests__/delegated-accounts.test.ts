@@ -18,6 +18,9 @@ const delegated = (access: string, sendAs = false) => ({
   isReadOnly: access === "read",
   accountCapabilities: {
     [CAP.mail]: {},
+    [CAP.calendars]: {},
+    [CAP.contacts]: {},
+    [CAP.filenode]: {},
     "urn:inbuxa:jmap": { delegation: { locked: true, access, sendAs, until: null } },
   },
 });
@@ -26,11 +29,15 @@ const sessionWith = (locked: Record<string, unknown> | null) =>
   ({
     capabilities: { [CAP.core]: { maxCallsInRequest: 16, maxObjectsInGet: 500 }, [CAP.mail]: {} },
     accounts: {
-      own: { name: "me@example.com", isPersonal: true, accountCapabilities: { [CAP.mail]: {} } },
+      own: {
+        name: "me@example.com",
+        isPersonal: true,
+        accountCapabilities: { [CAP.mail]: {}, [CAP.calendars]: {}, [CAP.contacts]: {}, [CAP.filenode]: {} },
+      },
       shared: { name: "team@example.com", isPersonal: false, accountCapabilities: { [CAP.mail]: {} } },
       ...(locked ? { locked } : {}),
     },
-    primaryAccounts: { [CAP.mail]: "own" },
+    primaryAccounts: { [CAP.mail]: "own", [CAP.calendars]: "own", [CAP.contacts]: "own", [CAP.filenode]: "own" },
     state: "s",
   }) as unknown as JmapSession;
 
@@ -92,6 +99,19 @@ describe("viewing a locked account", () => {
     expect(useSession.getState().ownAccountFor(CAP.mail)).toBe("own");
     useSession.getState().view(null);
     expect(useMail.getState().accountId).toBe("own");
+  });
+
+  it("brings the whole account: calendar, contacts and files, never the reader's settings", () => {
+    const s = () => useSession.getState();
+    expect(s().viewAccountFor(CAP.calendars)).toBe("own");
+    s().view("locked");
+    for (const cap of [CAP.calendars, CAP.contacts, CAP.filenode]) {
+      expect(s().viewAccountFor(cap)).toBe("locked");
+    }
+    // Settings live in the reader's own Files, whatever is in view
+    expect(s().ownAccountFor(CAP.filenode)).toBe("own");
+    s().view(null);
+    expect(s().viewAccountFor(CAP.contacts)).toBe("own");
   });
 
   it("refuses an account that isn't delegated", () => {

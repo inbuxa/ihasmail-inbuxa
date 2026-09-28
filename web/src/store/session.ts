@@ -19,9 +19,9 @@ interface SessionState {
   /** Selected mail account (defaults to primary). */
   accountId: Id | null;
   /**
-   * A locked account handed to the reader that the mail view shows instead
-   * of their own (inbuxa AL-7). Only mail follows it: settings, filters,
-   * push and everything else stay the reader's own.
+   * A locked account handed to the reader that the app shows instead of
+   * their own (inbuxa AL-7): its mail, calendar, contacts and files. The
+   * reader's settings, filters, signatures and push stay their own.
    */
   viewing: Id | null;
   /** The name of an account whose delegation ended while it was in view. */
@@ -42,6 +42,13 @@ interface SessionState {
   accountFor(cap: string): Id | null;
   /** The user's own account for a capability, whatever they are looking at. */
   ownAccountFor(cap: string): Id | null;
+  /**
+   * inbuxa AL-7: the account calendar, contacts and files show: the locked
+   * account in view, if it offers `cap`, else the reader's own. Never for
+   * anything the reader keeps (settings, signatures, push): those stay
+   * `ownAccountFor`.
+   */
+  viewAccountFor(cap: string): Id | null;
 }
 
 let refreshing: Promise<void> | null = null;
@@ -160,6 +167,13 @@ export const useSession = create<SessionState>((set, get) => ({
 
   ownAccountFor(cap) {
     return ownAccountForCapability(get().session, cap);
+  },
+
+  viewAccountFor(cap) {
+    const { session, viewing } = get();
+    const viewed = viewing ? session?.accounts[viewing] : undefined;
+    if (viewing && viewed && cap in (viewed.accountCapabilities ?? {})) return viewing;
+    return ownAccountForCapability(session, cap);
   },
 }));
 
