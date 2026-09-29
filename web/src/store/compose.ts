@@ -95,6 +95,37 @@ export interface Draft {
   mailboxIdOnSend?: Id | null;
   /** When set, hand the message to the server held until this instant. */
   sendAt: number | null;
+  /**
+   * The server's DLP rules refused the last send (inbuxa): a warning the
+   * sender may answer with a reason, or a block. The composer shows it.
+   */
+  dlp?: DlpRefusalInfo | null;
+  /** The reason to send despite a DLP warning, for the next send only. */
+  dlpOverride?: string | null;
+}
+
+export interface DlpRefusalInfo {
+  kind: "warning" | "blocked";
+  rules: { name: string; notice: string }[];
+}
+
+/**
+ * A send the server's DLP rules refused (inbuxa: `inbuxa:dlpWarning`,
+ * `inbuxa:dlpBlocked`): which rules, and what they say.
+ */
+export class DlpRefusal extends Error {
+  constructor(public info: DlpRefusalInfo) {
+    super(info.rules.map((r) => r.notice).join(" ") || translate("This message wasn't sent under the server's rules"));
+  }
+}
+
+/** The DLP refusal in a submission's set error, if it is one. */
+export function dlpRefusalOf(err: { type?: string; rules?: { name?: string; notice?: string }[] } | undefined): DlpRefusalInfo | null {
+  if (!err || (err.type !== "inbuxa:dlpWarning" && err.type !== "inbuxa:dlpBlocked")) return null;
+  return {
+    kind: err.type === "inbuxa:dlpWarning" ? "warning" : "blocked",
+    rules: (err.rules ?? []).map((r) => ({ name: r.name ?? "", notice: r.notice ?? "" })),
+  };
 }
 
 interface ComposeState {
@@ -723,9 +754,21 @@ export const useCompose = create<ComposeState>((set, get) => ({
         return { pendingSends: rest };
       });
       try {
-        await sendInternal(d, get);
-        toast.success(scheduling ? translate("Send scheduled for {when}", { when: formatScheduleTime(new Date(d.sendAt!)) }) : translate("Message sent"));
+        const sent = await sendInternal(d, get);
+        toast.success(
+          sent.held
+            ? translate("Held for review: it's sent once a reviewer releases it")
+            : scheduling
+              ? translate("Send scheduled for {when}", { when: formatScheduleTime(new Date(d.sendAt!)) })
+              : translate("Message sent"),
+        );
       } catch (err) {
+        // inbuxa: DLP refused it: the draft comes back with the rules' notices
+        if (err instanceof DlpRefusal) {
+          set((s) => ({ drafts: [...s.drafts, { ...d, sending: false, error: null, dlp: err.info, dlpOverride: null }], activeKey: d.key }));
+          toast.error(err.info.kind === "warning" ? translate("Not sent yet: check the warning") : translate("Not sent: blocked by the server's rules"));
+          return;
+        }
         toast.error(translate("Send failed: {error}", { error: (err as Error).message }), {
           action: { label: translate("Open draft"), onClick: () => set((s) => ({ drafts: [...s.drafts, { ...d, sending: false, error: (err as Error).message }], activeKey: d.key })) },
           duration: 15000,
@@ -1020,6 +1063,8 @@ export function buildSubmission(opts: {
   draftsId: Id | null;
   scheduledId: Id | null;
   sendAt: number | null;
+  /** inbuxa: the sender's reason to send despite a DLP warning. */
+  dlpOverride?: string | null;
 }): { create: Record<string, unknown>; onSuccessUpdateEmail: Record<string, unknown> } {
   const scheduled = opts.sendAt !== null;
   const mailFrom: Record<string, unknown> = { email: opts.fromEmail };
@@ -1029,13 +1074,17 @@ export function buildSubmission(opts: {
   if (filedIn) onSuccess[`mailboxIds/${filedIn}`] = true;
   if (opts.draftsId && opts.draftsId !== filedIn) onSuccess[`mailboxIds/${opts.draftsId}`] = null;
   if (scheduled && opts.sentId && opts.sentId !== filedIn) onSuccess[`mailboxIds/${opts.sentId}`] = null;
-  return {
-    create: { identityId: opts.identityId, emailId: opts.emailRef, envelope: { mailFrom, rcptTo: opts.rcpts } },
-    onSuccessUpdateEmail: onSuccess,
-  };
+  const create: Record<string, unknown> = { identityId: opts.identityId, emailId: opts.emailRef, envelope: { mailFrom, rcptTo: opts.rcpts } };
+  if (opts.dlpOverride?.trim()) create["inbuxa:dlpOverride"] = { reason: opts.dlpOverride.trim() };
+  return { create, onSuccessUpdateEmail: onSuccess };
 }
 
-async function sendInternal(d: Draft, _get: () => ComposeState): Promise<void> {
+/** What the server said of a send: whether DLP held it for review (inbuxa). */
+interface Sent {
+  held: boolean;
+}
+
+async function sendInternal(d: Draft, _get: () => ComposeState): Promise<Sent> {
   const mail = useMail.getState();
   const accountId = mail.accountId!;
   const ident = mail.identities.find((i) => i.id === d.identityId) ?? mail.identities[0];
@@ -1057,6 +1106,7 @@ async function sendInternal(d: Draft, _get: () => ComposeState): Promise<void> {
     draftsId,
     scheduledId,
     sendAt: scheduled ? d.sendAt : null,
+    dlpOverride: d.dlpOverride ?? null,
   });
   const calls: Array<[string, Record<string, unknown>, string]> = [
     ["Email/set", { accountId, create: { m: email }, ...(d.draftId ? { destroy: [d.draftId] } : {}) }, "e"],
@@ -1080,6 +1130,8 @@ async function sendInternal(d: Draft, _get: () => ComposeState): Promise<void> {
     // Clean up the created (unsent) email so it doesn't linger in Sent.
     const created = e.created?.m?.id;
     if (created) void client.call("Email/set", { accountId, destroy: [created] });
+    const dlp = dlpRefusalOf(err as { type?: string; rules?: { name?: string; notice?: string }[] });
+    if (dlp) throw new DlpRefusal(dlp);
     throw new Error(setErrorMessage(err));
   }
   if (d.relatedEmailId && d.relatedKeyword) {
@@ -1101,6 +1153,7 @@ async function sendInternal(d: Draft, _get: () => ComposeState): Promise<void> {
   }
   void mail.loadMailboxes();
   void mail.refreshList();
+  return { held: (s.created?.s as { "inbuxa:held"?: boolean } | undefined)?.["inbuxa:held"] === true };
 }
 
 export { FULL_PROPS, BODY_PROPS };
