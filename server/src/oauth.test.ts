@@ -198,6 +198,8 @@ test("a password change signs the session out, since the server revokes its toke
 
 test("creating an app password checks the typed password with the server", async () => {
   await signIn();
+  // As INBUXA's server does: no password over JMAP (contract C-23).
+  oauthMock.refuseBasic(true);
   const wrong = await call("/api/account/app-passwords", { method: "POST", body: JSON.stringify({ description: "Phone", current: "nope" }) });
   assert.equal(wrong.status, 403);
   const right = await call("/api/account/app-passwords", { method: "POST", body: JSON.stringify({ description: "Phone", current: "demo-password" }) });

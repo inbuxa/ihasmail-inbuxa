@@ -14,7 +14,7 @@ import { MAX_OBJECTS, MethodError, directory, enforceLimits, resolveRefs } from 
 import { handlers } from "./handlers.js";
 export { account } from "./config.js";
 import { checkOtp } from "./auth.js";
-import { checkBearer, handleOAuth } from "./oauth.js";
+import { basicRefused, checkBearer, handleOAuth } from "./oauth.js";
 import { sseClients, broadcast } from "./events.js";
 
 /* ---------- http ---------- */
@@ -26,7 +26,7 @@ function unauthorized(res: ServerResponse) {
 function checkAuth(req: IncomingMessage): boolean {
   const h = req.headers.authorization ?? "";
   if (checkBearer(h)) return true;
-  if (!h.startsWith("Basic ")) return false;
+  if (!h.startsWith("Basic ") || basicRefused) return false;
   const raw = Buffer.from(h.slice(6), "base64").toString();
   const sep = raw.indexOf(":");
   if (sep < 0) return false;

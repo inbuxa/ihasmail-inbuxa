@@ -41,7 +41,7 @@ import {
   revokeAppPassword,
 } from "./account.js";
 import { imageProxyHandler } from "./imageproxy.js";
-import { SignInError, finish as finishSignIn, needsRefresh, oauthEnabled, refreshTokens, singleServer, start as startSignIn, type TokenSet } from "./oauth.js";
+import { SignInError, finish as finishSignIn, needsRefresh, oauthEnabled, passwordConfirms, refreshTokens, singleServer, start as startSignIn, type TokenSet } from "./oauth.js";
 import { icsProxyHandler } from "./icsproxy.js";
 import { staticHandler } from "./static.js";
 import { mailNode, webmailNode } from "./nodes.js";
@@ -1127,11 +1127,10 @@ async function readJson<T>(c: Context): Promise<T | null> {
  */
 async function confirmsPassword(session: LiveSession, candidate: string): Promise<boolean> {
   if (session.tokens) {
-    // Holding no password, the only judge is the server.
+    // Holding no password, the only judge is the server, asked on its sign-in
+    // endpoint since it takes no password over JMAP.
     try {
-      const authorization = `Basic ${Buffer.from(`${session.username}:${candidate}`, "utf8").toString("base64")}`;
-      await fetchUpstreamSession(authorization, upstreamFor(session.username));
-      return true;
+      return await passwordConfirms({ base: upstreamFor(session.username), username: session.username, password: candidate });
     } catch {
       return false;
     }

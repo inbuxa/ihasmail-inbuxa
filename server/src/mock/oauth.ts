@@ -23,11 +23,18 @@ const refreshTokens = new Map<string, Grant>();
 
 const base = () => `http://127.0.0.1:${PORT}`;
 
+/**
+ * Whether JMAP refuses Basic, as INBUXA's server does outside DAV (contract
+ * C-23). Off by default, since the mock also serves password sign-in.
+ */
+export let basicRefused = false;
+
 /** For tests: how long new access tokens last, and a way to end every token. */
 export const oauthMock = {
   setAccessTokenTtl(seconds: number) { accessTokenTtl = seconds; },
   expireAccessTokens() { for (const t of accessTokens.values()) t.expiresAt = 0; },
-  reset() { codes.clear(); accessTokens.clear(); refreshTokens.clear(); accessTokenTtl = 3600; },
+  refuseBasic(on: boolean) { basicRefused = on; },
+  reset() { codes.clear(); accessTokens.clear(); refreshTokens.clear(); accessTokenTtl = 3600; basicRefused = false; },
 };
 
 /** A bearer token the mock issued, still valid under the current password. */
@@ -47,6 +54,14 @@ function readForm(req: IncomingMessage): Promise<URLSearchParams> {
     const chunks: Buffer[] = [];
     req.on("data", (c) => chunks.push(c));
     req.on("end", () => resolve(new URLSearchParams(Buffer.concat(chunks).toString())));
+  });
+}
+
+function readBody(req: IncomingMessage): Promise<Buffer> {
+  return new Promise((resolve) => {
+    const chunks: Buffer[] = [];
+    req.on("data", (c) => chunks.push(c));
+    req.on("end", () => resolve(Buffer.concat(chunks)));
   });
 }
 
@@ -91,6 +106,35 @@ export async function handleOAuth(req: IncomingMessage, res: ServerResponse, url
     back.searchParams.set("state", q.get("state") ?? "");
     res.writeHead(302, { location: back.toString() });
     res.end();
+    return true;
+  }
+  if (url.pathname === "/api/auth" && req.method === "POST") {
+    // The server's sign-in page posts here; the mock answers for the demo user.
+    let body: Record<string, unknown>;
+    try {
+      body = JSON.parse((await readBody(req)).toString()) as Record<string, unknown>;
+    } catch {
+      json(res, 400, { error: "invalid_request" });
+      return true;
+    }
+    const redirectUri = typeof body.redirectUri === "string" ? body.redirectUri : "";
+    if (body.type !== "authCode" || body.clientId !== OAUTH_CLIENT_ID || !redirectUri || body.codeChallengeMethod !== "S256") {
+      json(res, 400, { error: "invalid_request" });
+      return true;
+    }
+    const secret = typeof body.accountSecret === "string" ? body.accountSecret : "";
+    const passwordOk = body.accountName === USER && (secret === account.password || account.appPasswords.some((a) => a.secret === secret));
+    if (!passwordOk) {
+      json(res, 200, { type: "failure" });
+      return true;
+    }
+    if (account.otpUrl && secret === account.password && !body.mfaToken) {
+      json(res, 200, { type: "mfaRequired" });
+      return true;
+    }
+    const code = randomBytes(16).toString("hex");
+    codes.set(code, { challenge: String(body.codeChallenge ?? ""), redirectUri, issuedAt: Date.now() });
+    json(res, 200, { type: "authenticated", client_code: code, iss: base() });
     return true;
   }
   if (url.pathname === "/auth/token" && req.method === "POST") {
