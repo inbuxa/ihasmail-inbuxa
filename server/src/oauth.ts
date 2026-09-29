@@ -134,6 +134,39 @@ export async function start(params: { username: string; base: string; remember: 
   return { location: url.toString(), state };
 }
 
+/**
+ * Whether `password` is the account's password, for a session that holds a
+ * token and so has no password to compare with.
+ *
+ * Asked of the server's sign-in endpoint, the one its own sign-in page posts
+ * to, because the server takes no password over JMAP (contract C-23). The
+ * request is this client's, to its registered redirect URI, so it passes the
+ * same checks a real sign-in does. A code it issues can never be exchanged:
+ * the PKCE verifier behind its challenge is thrown away here.
+ *
+ * "Two-factor code needed" counts as confirmed: the server says so only once
+ * the password has matched.
+ */
+export async function passwordConfirms(params: { base: string; username: string; password: string }): Promise<boolean> {
+  const res = await fetch(absoluteUpstream("/api/auth", params.base), {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({
+      type: "authCode",
+      accountName: params.username,
+      accountSecret: params.password,
+      clientId: config.oauthClientId,
+      redirectUri: redirectUri(),
+      codeChallenge: challengeOf(randomToken(48)),
+      codeChallengeMethod: "S256",
+    }),
+    signal: AbortSignal.timeout(config.upstreamTimeout),
+  });
+  if (!res.ok) throw new UpstreamError(`Password check failed (${res.status})`, 502);
+  const answer = (await res.json()) as { type?: string };
+  return answer.type === "authenticated" || answer.type === "mfaRequired";
+}
+
 export class SignInError extends Error {
   constructor(readonly code: "state_mismatch" | "expired" | "denied" | "exchange_failed", message: string) {
     super(message);
