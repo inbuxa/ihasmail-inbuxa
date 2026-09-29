@@ -1587,6 +1587,9 @@ a.menu-item:hover { color: var(--fg); }
 /* An offer the draft makes about itself, above the editor: quiet, one line, and dismissible. */
 .composer-notice { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 14px; background: var(--accent-soft); color: var(--accent-soft-fg); border-bottom: 1px solid var(--border); font-size: .85em; flex: 0 0 auto; }
 .composer-notice span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* inbuxa: a DLP warning or block on the last send */
+.composer-notice-dlp { background: var(--warn-soft); color: var(--fg); }
+.composer-notice-dlp span { white-space: normal; }
 .composer-fields { flex: 0 0 auto; padding: 0 12px; }
 .composer-field { display: flex; align-items: center; gap: 8px; min-height: 40px; border-bottom: 1px solid var(--border); padding: 4px 0; }
 .composer-field > label { color: var(--fg-muted); width: 42px; flex: 0 0 auto; font-size: .92em; }

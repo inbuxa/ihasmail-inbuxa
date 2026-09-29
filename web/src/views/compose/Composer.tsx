@@ -141,6 +141,19 @@ export function Composer({ draft }: { draft: Draft }) {
     await send(key);
   };
 
+  // inbuxa: DLP warned: send anyway with a reason the server records
+  const sendAnyway = async () => {
+    const reason = await promptDialog({
+      title: translate("Send anyway?"),
+      message: translate("Your reason is recorded with the message."),
+      placeholder: translate("Why this needs to go"),
+      confirmLabel: translate("Send anyway"),
+    });
+    if (!reason?.trim()) return;
+    patch({ dlp: null, dlpOverride: reason.trim() });
+    await send(key);
+  };
+
   const scheduleFor = (at: Date) => {
     sendMenu.close();
     setScheduleOpen(false);
@@ -290,6 +303,25 @@ export function Composer({ draft }: { draft: Draft }) {
               {d.formatOffer === "html" ? translate("Switch to rich text") : translate("Switch to plain text")}
             </button>
             <button type="button" className="icon-btn sm" aria-label={translate("Dismiss")} onClick={() => patch({ formatOffer: null })}><X size={14} /></button>
+          </div>
+        )}
+        {/*
+          inbuxa: the server's DLP rules refused the last send. A warning
+          can be answered with a reason; a block can't, only by changing
+          the message.
+        */}
+        {d.dlp && (
+          <div className="composer-notice composer-notice-dlp" role="alert">
+            <AlertTriangle size={14} />
+            <span title={d.dlp.rules.map((r) => r.notice).join(" ")}>
+              {d.dlp.kind === "warning" ? translate("Not sent yet:") : translate("Not sent:")} {d.dlp.rules.map((r) => r.notice).join(" ")}
+            </span>
+            {d.dlp.kind === "warning" && (
+              <button type="button" className="btn btn-sm" onClick={() => void sendAnyway()}>
+                {translate("Send anyway…")}
+              </button>
+            )}
+            <button type="button" className="icon-btn sm" aria-label={translate("Dismiss")} onClick={() => patch({ dlp: null })}><X size={14} /></button>
           </div>
         )}
         {d.format === "html" ? (
