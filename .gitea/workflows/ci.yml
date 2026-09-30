@@ -228,7 +228,7 @@ jobs:
     env:
       TOKEN: ${{ secrets.GITHUB_TOKEN }}
       SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-      CONTEXT: github/ci (${{ github.ref_type == 'tag' && 'tag' || 'branch' }})
+      CONTEXT: github/ci (${{ github.ref_type == 'tag' && format('tag {0}', github.ref_name) || 'branch' }})
     steps:
       - run: apt-get update -qq && apt-get install -y -qq --no-install-recommends ca-certificates curl jq >/dev/null
       - shell: bash
