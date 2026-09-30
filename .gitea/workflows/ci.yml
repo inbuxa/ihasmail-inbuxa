@@ -1,6 +1,19 @@
 # CI on the self-hosted Gitea, ported from .gitlab-ci.yml during the move off
 # GitLab (2026-09-22). Gitea reads .gitea/workflows and ignores .github/ once
-# this directory exists; .github/workflows stays as it was for GitHub.
+# this directory exists; .github/workflows is the GitHub side, below.
+#
+# WHERE THE BUILD RUNS. Gitea push-mirrors this repository to GitHub, and the
+# org variable BUILD_ON picks which forge does the heavy work:
+#   * unset (or anything but `github`): every job here runs, as it always did,
+#     and GitHub's workflow skips all of its jobs.
+#   * `github`: the test, build and publish jobs here are skipped, GitHub
+#     Actions runs .github/workflows/ci.yml on its hosted runners (native
+#     arm64, no QEMU), and the `github` job below waits for the commit status
+#     that run posts back, passing or failing with it. So this run's result is
+#     still the one that counts, for a PR's checks as for anything that merges
+#     on green CI. The variable is set on both forges, and must agree.
+# If GitHub is ever unavailable, unsetting BUILD_ON here is the whole
+# fallback: the jobs below take over again unchanged.
 #
 # Releases are cut by pushing a tag named `inbuxa-v<version>`, where
 # <version> is what scripts/version.mjs says for the tagged commit with the
@@ -35,6 +48,7 @@ concurrency:
 jobs:
   # -------------------------------------------------------------- test ------
   node:
+    if: ${{ vars.BUILD_ON != 'github' }}
     runs-on: light
     container:
       image: node:26-bookworm-slim@sha256:582460f614631b59b824ac6020533b9bf339c7fdf3a6d7db31abb6b4065f0212 # 26-bookworm-slim
@@ -73,7 +87,7 @@ jobs:
   # equivalent of ci.yml's final `docker build -t ihasmail:ci .` step. The
   # Dockerfile builds everything itself; `needs` only keeps the order.
   docker-build:
-    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+    if: ${{ vars.BUILD_ON != 'github' && !startsWith(github.ref, 'refs/tags/') }}
     needs: [node]
     runs-on: docker
     container:
@@ -93,7 +107,7 @@ jobs:
   # all agree, and the commit has to be on main, so a release never describes
   # code that was not reviewed onto the default branch.
   version:
-    if: ${{ startsWith(github.ref, 'refs/tags/inbuxa-v') }}
+    if: ${{ vars.BUILD_ON != 'github' && startsWith(github.ref, 'refs/tags/inbuxa-v') }}
     runs-on: light
     container:
       image: node:26-bookworm-slim@sha256:582460f614631b59b824ac6020533b9bf339c7fdf3a6d7db31abb6b4065f0212 # 26-bookworm-slim
@@ -125,7 +139,7 @@ jobs:
   # the job's own token is refused by the container registry. The release is
   # created last, so a release on the page always has its image behind it.
   publish:
-    if: ${{ startsWith(github.ref, 'refs/tags/inbuxa-v') }}
+    if: ${{ vars.BUILD_ON != 'github' && startsWith(github.ref, 'refs/tags/inbuxa-v') }}
     needs: [node, version]
     runs-on: docker
     container:
@@ -180,10 +194,13 @@ jobs:
 
   # The release above is made with the job's own token, and Gitea starts no
   # workflow for events the Actions bot causes -- announce.yml's
-  # 'on: release' never fires for it -- so announce it from here.
+  # 'on: release' never fires for it -- so announce it from here. With
+  # BUILD_ON=github the release is created by GitHub's run instead, and this
+  # follows the `github` job. Announcing stays on Gitea either way; the
+  # action posts once per tag, so a second attempt is a no-op.
   announce:
-    needs: [publish]
-    if: ${{ startsWith(github.ref, 'refs/tags/inbuxa-v') }}
+    needs: [publish, github]
+    if: ${{ always() && startsWith(github.ref, 'refs/tags/inbuxa-v') && (needs.publish.result == 'success' || needs.github.result == 'success') }}
     runs-on: light
     steps:
       - uses: coffey-labs/actions/discourse-release@e9293996e2efa770839121fa8f8da93083f216be
@@ -191,3 +208,38 @@ jobs:
           api-key: ${{ secrets.DISCOURSE_RELEASE_KEY }}
           discord-webhook: ${{ secrets.DISCORD_RELEASE_WEBHOOK }}
           tag: ${{ github.ref_name }}
+
+  # ------------------------------------------------------------ github ------
+  # With BUILD_ON=github, the work above happens in GitHub Actions, which
+  # posts one commit status back here when it finishes: "github/ci (branch)"
+  # for a branch push, "github/ci (tag)" for a tag. This job waits for that
+  # status on the commit under test -- the PR's head for a pull request -- and
+  # passes or fails with it. Nothing arriving within the timeout means GitHub
+  # never built the commit (a mirror that failed to sync, or GitHub being
+  # down): check the mirror, or unset BUILD_ON to build here.
+  github:
+    if: ${{ vars.BUILD_ON == 'github' }}
+    runs-on: light
+    timeout-minutes: 150
+    container:
+      image: node:26-bookworm-slim@sha256:582460f614631b59b824ac6020533b9bf339c7fdf3a6d7db31abb6b4065f0212 # 26-bookworm-slim
+    env:
+      TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      CONTEXT: github/ci (${{ github.ref_type == 'tag' && 'tag' || 'branch' }})
+    steps:
+      - run: apt-get update -qq && apt-get install -y -qq --no-install-recommends ca-certificates curl jq >/dev/null
+      - shell: bash
+        run: |
+          set -uo pipefail
+          url="$CI_SERVER_INTERNAL/api/v1/repos/$GITHUB_REPOSITORY/commits/$SHA/statuses?limit=50"
+          echo "waiting for '$CONTEXT' on $SHA"
+          while :; do
+            state="$(curl -fsS -H "Authorization: token $TOKEN" "$url" \
+                     | jq -r --arg c "$CONTEXT" '[.[] | select(.context == $c)] | sort_by(.id) | last | .status // empty')"
+            case "$state" in
+              success) echo "GitHub reported success"; exit 0 ;;
+              failure|error) echo "GitHub reported $state -- see the status's link for the run" >&2; exit 1 ;;
+            esac
+            sleep 20
+          done
