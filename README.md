@@ -8,6 +8,10 @@
   <a href="LICENSE"><img alt="License: AGPL-3.0-or-later" src="https://img.shields.io/badge/license-AGPL--3.0--or--later-2dd4bf?style=flat-square"></a>
 </p>
 
+> [!NOTE]
+> Development happens on [git.coffeylabs.org/inbuxa/ihasmail-inbuxa](https://git.coffeylabs.org/inbuxa/ihasmail-inbuxa); the copy on GitHub is a read-only mirror.
+> Report issues at **[git.coffeylabs.org/inbuxa/ihasmail-inbuxa/issues](https://git.coffeylabs.org/inbuxa/ihasmail-inbuxa/issues)**, and join discussions at **[community.coffeylabs.org](https://community.coffeylabs.org)**.
+
 The webmail of the INBUXA suite: mail, calendars, contacts, files and filters
 in one app that works as well on a phone as on a desktop. It talks only JMAP to
 the INBUXA mail server, and keeps nothing of its own: everything durable,
