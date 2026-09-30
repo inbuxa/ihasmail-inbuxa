@@ -47,7 +47,9 @@ env:
   REGISTRY: ${{ vars.REGISTRY }}
   # A registry path must be lowercase; the repository name already is.
   IMAGE: ${{ vars.REGISTRY }}/inbuxa/ihasmail-inbuxa
-  STATUS_CONTEXT: github/ci (${{ github.ref_type }})
+  # A tag's context names the tag: upstream v* and inbuxa-v* tags can sit on
+  # the same commit, and Gitea must not read one tag's result as the other's.
+  STATUS_CONTEXT: github/ci (${{ github.ref_type == 'tag' && format('tag {0}', github.ref_name) || 'branch' }})
 
 jobs:
   # Tells Gitea a result is on its way, so a PR shows the check as running
@@ -179,7 +181,10 @@ jobs:
         with:
           name: digest-${{ strategy.job-index }}
           path: /tmp/digests/*
-          retention-days: 1
+          # Kept a week, and overwritable, so a re-run of the build or of
+          # publish alone still finds (or replaces) the digests.
+          retention-days: 7
+          overwrite: true
           if-no-files-found: error
 
   # Joins the digests into `:<version>` and `:latest`, links the package to
